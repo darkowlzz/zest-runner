@@ -1,0 +1,4 @@
+--require should
+--ui bdd
+--recursive
+--reporter spec

@@ -1,0 +1,19 @@
+{
+  "name": "zest-runner",
+  "version": "0.0.0",
+  "description": "",
+  "main": "zestRunner.js",
+  "scripts": {
+    "test": "mocha"
+  },
+  "author": "Sunny <indiasuny000@gmail.com> (darkowlzz)",
+  "license": "MPL",
+  "dependencies": {
+    "lodash": "^2.4.1",
+    "zest-creator": "git+ssh://git@github.com:darkowlzz/zest-creator.git"
+  },
+  "devDependencies": {
+    "mocha": "^2.1.0",
+    "should": "^4.4.2"
+  }
+}
