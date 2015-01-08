@@ -1,4 +1,4 @@
-exports.sampleZest = {
+{
   "about": "This is a Zest script. For more details about Zest visit https://developer.mozilla.org/en-US/docs/Zest",
   "zestVersion": "0.3",
   "title": "zzzz",
@@ -39,7 +39,7 @@ exports.sampleZest = {
       "index": 4,
       "enabled": true,
       "elementType": "ZestAssignRandomInteger"
-    },
+    }
   ],
   "authentication": [],
   "index": 0,

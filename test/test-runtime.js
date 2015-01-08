@@ -1,13 +1,12 @@
 'use strict';
 
-var sampleData  = require('./sampleDataSet').sampleZest,
-    ZestCreator = require('zest-creator'),
+var ZestCreator = require('zest-creator'),
     runtime     = require('../runtime'),
     should      = require('should');
 
 
 describe('test zest runner', function () {
-  var zc = new ZestCreator({}, sampleData);
+  var zc = new ZestCreator({file: 'testData/sampleDataSet.js'});
 
   it('should run assignString', function () {
     runtime.run(zc.getStatement(2));
