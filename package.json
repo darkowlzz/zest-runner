@@ -10,7 +10,8 @@
   "license": "MPL",
   "dependencies": {
     "lodash": "^2.4.1",
-    "zest-creator": "git+ssh://git@github.com:darkowlzz/zest-creator.git"
+    "random-seed": "^0.2.0",
+    "zest-creator": "git://github.com/darkowlzz/zest-creator"
   },
   "devDependencies": {
     "mocha": "^2.1.0",
