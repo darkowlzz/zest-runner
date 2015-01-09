@@ -6,7 +6,8 @@ var ZestCreator = require('zest-creator'),
 
 
 describe('test zest runner', function () {
-  var zc = new ZestCreator({file: 'testData/sampleDataSet.js'});
+  var zc = new ZestCreator({file: 'testData/sampleDataSet.js',
+                            debug: true});
 
   it('should run assignString', function () {
     runtime.run(zc.getStatement(2));
@@ -34,11 +35,22 @@ describe('test zest runner', function () {
   });
 
   it('should run actionPrint', function () {
-    runtime.run(zc.getStatement(10)).should.be.exactly('yo');
+    runtime.run(zc.getStatement(10));
+    // FIXME: Test it
   });
 
   it('should run loopString', function () {
     runtime.run(zc.getStatement(8));
     // FIXME: Create a way to test it.
-  })
+  });
+
+  it('should run loopInteger', function () {
+    runtime.run(zc.getStatement(11));
+    // FIXME: Test it
+  });
+
+  it('should run assignCalc add', function () {
+    runtime.run(zc.getStatement(12));
+    runtime.varList().z.should.be.exactly(7);
+  });
 });
