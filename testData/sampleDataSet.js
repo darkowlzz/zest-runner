@@ -39,6 +39,62 @@
       "index": 4,
       "enabled": true,
       "elementType": "ZestAssignRandomInteger"
+    },
+    {
+      "replace": "pp",
+      "replacement": "gg",
+      "regex": false,
+      "caseExact": false,
+      "variableName": "var1",
+      "index": 5,
+      "enabled": true,
+      "elementType": "ZestAssignReplace"
+    },
+    {
+      "string": "apples are apples",
+      "variableName": "var4",
+      "index": 6,
+      "enabled": true,
+      "elementType": "ZestAssignString"
+    },
+    {
+      "replace": "apples",
+      "replacement": "oranges",
+      "regex": false,
+      "caseExact": false,
+      "variableName": "var4",
+      "index": 7,
+      "enabled": true,
+      "elementType": "ZestAssignReplace"
+    },
+    {
+      "set": {
+        "tokens": [
+          "a",
+          "b",
+          "c",
+          "d"
+        ],
+        "elementType": "ZestLoopTokenStringSet"
+      },
+      "statements": [
+        {
+          "message": "hi {{r}}",
+          "index": 9,
+          "enabled": true,
+          "elementType": "ZestActionPrint"
+        },
+        {
+          "message": "yo",
+          "index": 10,
+          "enabled": true,
+          "elementType": "ZestActionPrint"
+        }
+      ],
+      "variableName": "r",
+      "index": 8,
+      "enabled": true,
+      "elementType": "ZestLoopString"
     }
   ],
   "authentication": [],
