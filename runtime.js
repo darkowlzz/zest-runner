@@ -33,6 +33,15 @@ function run (stmt) {
       break;
 
     case 'ZestAssignReplace':
+      if (stmt.regex) {
+        // FIXME: create proper regex when regex is true
+        var re = new RegExp(stmt.replace, 'g');
+      } else {
+        var re = new RegExp(stmt.replace, 'g');
+      }
+      globals[stmt.variableName] = globals[stmt.variableName].replace(
+                                     re, stmt.replacement
+                                   );
       break;
 
     case 'ZestAssignStringDelimiters':
@@ -42,6 +51,15 @@ function run (stmt) {
       break;
 
     case 'ZestLoopString':
+      var tokens = stmt.set.tokens;
+      var loopVar = stmt.variableName;
+      for (var i = 0; i < tokens.length; i++) {
+        globals[loopVar] = tokens[i];
+        for (var j = 0; j < stmt.statements.length; j++) {
+          run(stmt.statements[j]);
+        }
+      }
+      // FIXME: Create a way to test it.
       break;
 
     case 'ZestLoopFile':
@@ -54,6 +72,8 @@ function run (stmt) {
       break;
 
     case 'ZestActionPrint':
+      var message = stmt.message.replace(/({{\w+}})/g, replacer);
+      return message;
       break;
 
     case 'ZestActionSleep':
@@ -67,3 +87,8 @@ function run (stmt) {
   }
 }
 exports.run = run;
+
+function replacer (matchWord) {
+  var variables = matchWord.match(/(\w+)/g);
+  return globals[variables[0]];
+}
