@@ -95,6 +95,35 @@
       "index": 8,
       "enabled": true,
       "elementType": "ZestLoopString"
+    },
+    {
+      "set": {
+        "start": 0,
+        "end": 20,
+        "step": 2,
+        "elementType": "ZestLoopTokenIntegerSet"
+      },
+      "statements": [
+        {
+          "message": "zooo {{x}}",
+          "index": 3,
+          "enabled": true,
+          "elementType": "ZestActionPrint"
+        }
+      ],
+      "variableName": "x",
+      "index": 11,
+      "enabled": true,
+      "elementType": "ZestLoopInteger"
+    },
+    {
+      "variableName": "z",
+      "operandA": 3,
+      "operandB": 4,
+      "operation": "add",
+      "index": 12,
+      "enabled": true,
+      "elementType": "ZestAssignCalc"
     }
   ],
   "authentication": [],

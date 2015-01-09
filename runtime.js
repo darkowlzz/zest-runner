@@ -66,6 +66,13 @@ function run (stmt) {
       break;
 
     case 'ZestLoopInteger':
+      var loopVar = stmt.variableName;
+      for (var i = stmt.set.start; i < stmt.set.end; i += stmt.set.step) {
+        globals[loopVar] = i;
+        for (var j = 0; j < stmt.statements.length; j++) {
+          run(stmt.statements[j]);
+        }
+      }
       break;
 
     case 'ZestLoopClientElements':
@@ -73,13 +80,49 @@ function run (stmt) {
 
     case 'ZestActionPrint':
       var message = stmt.message.replace(/({{\w+}})/g, replacer);
-      return message;
       break;
 
     case 'ZestActionSleep':
       break;
 
     case 'ZestActionFail':
+      break;
+
+    case 'ZestAssignCalc':
+      var oprndA, oprndB;
+      if (typeof(stmt.operandA) === 'number') {
+        var oprndA = stmt.operandA;
+      } else {
+        var oprndA = globals[stmt.operandA];
+      }
+
+      if (typeof(stmt.operandB) === 'number') {
+        var oprndB = stmt.operandB;
+      } else {
+        var oprndB = globals[stmt.operandB];
+      }
+
+      switch (stmt.operation) {
+        case 'add':
+          globals[stmt.variableName] = oprndA + oprndB;
+          break;
+
+        case 'subtract':
+          globals[stmt.variableName] = oprndA - oprndB;
+          break;
+
+        case 'multiply':
+          globals[stmt.variableName] = oprndA * oprndB;
+          break;
+
+        case 'divide':
+          globals[stmt.variableName] = oprndA / oprndB;
+          break;
+
+        default:
+          console.log('unknown operation');
+      }
+
       break;
 
     default:
