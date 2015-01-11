@@ -149,6 +149,39 @@
       "index": 16,
       "enabled": true,
       "elementType": "ZestAssignCalc"
+    },
+    {
+      "variableName": "z",
+      "operandA": 4,
+      "operandB": 4,
+      "operation": "subtract",
+      "index": 17,
+      "enabled": true,
+      "elementType": "ZestAssignCalc"
+    },
+    {
+      "variableName": "z",
+      "operandA": 3,
+      "operandB": 4,
+      "operation": "multiply",
+      "index": 18,
+      "enabled": true,
+      "elementType": "ZestAssignCalc"
+    },
+    {
+      "variableName": "z",
+      "operandA": 8,
+      "operandB": 4,
+      "operation": "divide",
+      "index": 19,
+      "enabled": true,
+      "elementType": "ZestAssignCalc"
+    },
+    {
+      "milliseconds": 500,
+      "index": 20,
+      "enabled": true,
+      "elementType": "ZestActionSleep"
     }
   ],
   "authentication": [],
