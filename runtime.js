@@ -93,30 +93,30 @@ function run (stmt) {
       if (typeof(stmt.operandA) === 'number') {
         var oprndA = stmt.operandA;
       } else {
-        var oprndA = globals[stmt.operandA];
+        var oprndA = parseFloat(globals[stmt.operandA]);
       }
 
       if (typeof(stmt.operandB) === 'number') {
         var oprndB = stmt.operandB;
       } else {
-        var oprndB = globals[stmt.operandB];
+        var oprndB = parseFloat(globals[stmt.operandB]);
       }
 
       switch (stmt.operation) {
         case 'add':
-          globals[stmt.variableName] = oprndA + oprndB;
+          globals[stmt.variableName] = (oprndA + oprndB).toString();
           break;
 
         case 'subtract':
-          globals[stmt.variableName] = oprndA - oprndB;
+          globals[stmt.variableName] = (oprndA - oprndB).toString();
           break;
 
         case 'multiply':
-          globals[stmt.variableName] = oprndA * oprndB;
+          globals[stmt.variableName] = (oprndA * oprndB).toString();
           break;
 
         case 'divide':
-          globals[stmt.variableName] = oprndA / oprndB;
+          globals[stmt.variableName] = (oprndA / oprndB).toString();
           break;
 
         default:

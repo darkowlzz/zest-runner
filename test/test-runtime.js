@@ -41,16 +41,19 @@ describe('test zest runner', function () {
 
   it('should run loopString', function () {
     runtime.run(zc.getStatement(8));
-    // FIXME: Create a way to test it.
+    runtime.varList().m.should.be.exactly('4');
+    runtime.run(zc.getStatement(9));
+    runtime.varList().m.should.be.exactly('8');
   });
 
   it('should run loopInteger', function () {
-    runtime.run(zc.getStatement(11));
-    // FIXME: Test it
+    runtime.varList().m.should.be.exactly('8');
+    runtime.run(zc.getStatement(13));
+    runtime.varList().m.should.be.exactly('18');
   });
 
   it('should run assignCalc add', function () {
-    runtime.run(zc.getStatement(12));
-    runtime.varList().z.should.be.exactly(7);
+    runtime.run(zc.getStatement(16));
+    runtime.varList().z.should.be.exactly('7');
   });
 });
