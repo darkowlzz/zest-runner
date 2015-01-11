@@ -1,137 +1,145 @@
 'use strict';
 
-var _    = require('lodash'),
-    rand = require('random-seed').create();
+module.exports = Runtime;
 
-var globals = {};
+var _     = require('lodash'),
+    rand  = require('random-seed').create(),
+    utils = require('./utils');
 
-function varList () {
-  return globals;
+
+function Runtime () {
+  this.globals = {};
 }
-exports.varList = varList;
 
-function run (stmt) {
-  switch (stmt.elementType) {
-    case 'ZestComment':
-      break;
+Runtime.prototype = {
 
-    case 'ZestRequest':
-      break;
+  run: function (stmt) {
+    switch (stmt.elementType) {
+      case 'ZestComment':
+        break;
 
-    case 'ZestConditional':
-      break;
+      case 'ZestRequest':
+        break;
 
-    case 'ZestAssignString':
-      globals[stmt.variableName] = stmt.string;
-      break;
+      case 'ZestConditional':
+        break;
 
-    case 'ZestAssignRandomInteger':
-      globals[stmt.variableName] = rand.intBetween(stmt.minInt, stmt.maxInt);
-      break;
+      case 'ZestAssignString':
+        this.globals[stmt.variableName] = stmt.string;
+        break;
 
-    case 'ZestAssignFieldDefinition':
-      break;
+      case 'ZestAssignRandomInteger':
+        this.globals[stmt.variableName] = rand.intBetween(stmt.minInt, stmt.maxInt);
+        break;
 
-    case 'ZestAssignReplace':
-      if (stmt.regex) {
-        // FIXME: create proper regex when regex is true
-        var re = new RegExp(stmt.replace, 'g');
-      } else {
-        var re = new RegExp(stmt.replace, 'g');
-      }
-      globals[stmt.variableName] = globals[stmt.variableName].replace(
-                                     re, stmt.replacement
-                                   );
-      break;
+      case 'ZestAssignFieldDefinition':
+        break;
 
-    case 'ZestAssignStringDelimiters':
-      break;
-
-    case 'ZestAssignRegexDelimiters':
-      break;
-
-    case 'ZestLoopString':
-      var tokens = stmt.set.tokens;
-      var loopVar = stmt.variableName;
-      for (var i = 0; i < tokens.length; i++) {
-        globals[loopVar] = tokens[i];
-        for (var j = 0; j < stmt.statements.length; j++) {
-          run(stmt.statements[j]);
+      case 'ZestAssignReplace':
+        if (stmt.regex) {
+          // FIXME: create proper regex when regex is true
+          var re = new RegExp(stmt.replace, 'g');
+        } else {
+          var re = new RegExp(stmt.replace, 'g');
         }
-      }
-      // FIXME: Create a way to test it.
-      break;
+        this.globals[stmt.variableName] = this.globals[stmt.variableName].replace(
+                                       re, stmt.replacement
+                                     );
+        break;
 
-    case 'ZestLoopFile':
-      break;
+      case 'ZestAssignStringDelimiters':
+        break;
 
-    case 'ZestLoopInteger':
-      var loopVar = stmt.variableName;
-      for (var i = stmt.set.start; i < stmt.set.end; i += stmt.set.step) {
-        globals[loopVar] = i;
-        for (var j = 0; j < stmt.statements.length; j++) {
-          run(stmt.statements[j]);
+      case 'ZestAssignRegexDelimiters':
+        break;
+
+      case 'ZestLoopString':
+        var tokens = stmt.set.tokens;
+        var loopVar = stmt.variableName;
+        var count = 0;
+        var that = this;
+        utils.syncLoop(tokens.length, function(loop) {
+          that.globals[loopVar] = tokens[i];
+          var count2 = 0;
+          utils.syncLoop(stmt.statements.length, function(loop2) {
+            that.run.call(that, stmt.statements[count2]);
+            count2++;
+            loop2.next();
+          });
+          count++;
+          loop.next();
+        });
+        break;
+
+      case 'ZestLoopFile':
+          break;
+
+      case 'ZestLoopInteger':
+        var loopVar = stmt.variableName;
+        for (var i = stmt.set.start; i < stmt.set.end; i += stmt.set.step) {
+          this.globals[loopVar] = i;
+          for (var j = 0; j < stmt.statements.length; j++) {
+            this.run(stmt.statements[j]);
+          }
         }
-      }
-      break;
+        break;
 
-    case 'ZestLoopClientElements':
-      break;
+      case 'ZestLoopClientElements':
+        break;
 
-    case 'ZestActionPrint':
-      var message = stmt.message.replace(/({{\w+}})/g, replacer);
-      break;
+      case 'ZestActionPrint':
+        var globals = this.globals;
+        var message = stmt.message.replace(/({{\w+}})/g, function (matchWord) {
+          var variables = matchWord.match(/(\w+)/g);
+          return globals[variables[0]];
+        });
+        break;
 
-    case 'ZestActionSleep':
-      break;
+      case 'ZestActionSleep':
+        break;
 
-    case 'ZestActionFail':
-      break;
+      case 'ZestActionFail':
+        break;
 
-    case 'ZestAssignCalc':
-      var oprndA, oprndB;
-      if (typeof(stmt.operandA) === 'number') {
-        var oprndA = stmt.operandA;
-      } else {
-        var oprndA = parseFloat(globals[stmt.operandA]);
-      }
+      case 'ZestAssignCalc':
+        var oprndA, oprndB;
+        if (typeof(stmt.operandA) === 'number') {
+          var oprndA = stmt.operandA;
+        } else {
+          var oprndA = parseFloat(this.globals[stmt.operandA]);
+        }
 
-      if (typeof(stmt.operandB) === 'number') {
-        var oprndB = stmt.operandB;
-      } else {
-        var oprndB = parseFloat(globals[stmt.operandB]);
-      }
+        if (typeof(stmt.operandB) === 'number') {
+          var oprndB = stmt.operandB;
+        } else {
+          var oprndB = parseFloat(this.globals[stmt.operandB]);
+        }
 
-      switch (stmt.operation) {
-        case 'add':
-          globals[stmt.variableName] = (oprndA + oprndB).toString();
-          break;
+        switch (stmt.operation) {
+          case 'add':
+            this.globals[stmt.variableName] = (oprndA + oprndB).toString();
+            break;
 
-        case 'subtract':
-          globals[stmt.variableName] = (oprndA - oprndB).toString();
-          break;
+          case 'subtract':
+            this.globals[stmt.variableName] = (oprndA - oprndB).toString();
+            break;
 
-        case 'multiply':
-          globals[stmt.variableName] = (oprndA * oprndB).toString();
-          break;
+          case 'multiply':
+            this.globals[stmt.variableName] = (oprndA * oprndB).toString();
+            break;
 
-        case 'divide':
-          globals[stmt.variableName] = (oprndA / oprndB).toString();
-          break;
+          case 'divide':
+            this.globals[stmt.variableName] = (oprndA / oprndB).toString();
+            break;
 
-        default:
-          console.log('unknown operation');
-      }
+          default:
+            console.log('unknown operation');
+        }
 
-      break;
+        break;
 
-    default:
-      throw 'Unknown statement';
+      default:
+        throw 'Unknown statement';
+    }
   }
-}
-exports.run = run;
-
-function replacer (matchWord) {
-  var variables = matchWord.match(/(\w+)/g);
-  return globals[variables[0]];
 }
