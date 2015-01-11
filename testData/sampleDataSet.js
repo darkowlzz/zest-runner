@@ -68,6 +68,13 @@
       "elementType": "ZestAssignReplace"
     },
     {
+      "string": "4",
+      "variableName": "m",
+      "index": 8,
+      "enabled": true,
+      "elementType": "ZestAssignString"
+    },
+    {
       "set": {
         "tokens": [
           "a",
@@ -80,19 +87,28 @@
       "statements": [
         {
           "message": "hi {{r}}",
-          "index": 9,
+          "index": 10,
           "enabled": true,
           "elementType": "ZestActionPrint"
         },
         {
           "message": "yo",
-          "index": 10,
+          "index": 11,
           "enabled": true,
           "elementType": "ZestActionPrint"
+        },
+        {
+          "variableName": "m",
+          "operandA": "m",
+          "operandB": 1,
+          "operation": "add",
+          "index": 12,
+          "enabled": true,
+          "elementType": "ZestAssignCalc"
         }
       ],
       "variableName": "r",
-      "index": 8,
+      "index": 9,
       "enabled": true,
       "elementType": "ZestLoopString"
     },
@@ -106,13 +122,22 @@
       "statements": [
         {
           "message": "zooo {{x}}",
-          "index": 3,
+          "index": 14,
           "enabled": true,
           "elementType": "ZestActionPrint"
+        },
+        {
+          "variableName": "m",
+          "operandA": "m",
+          "operandB": 1,
+          "operation": "add",
+          "index": 15,
+          "enabled": true,
+          "elementType": "ZestAssignCalc"
         }
       ],
       "variableName": "x",
-      "index": 11,
+      "index": 13,
       "enabled": true,
       "elementType": "ZestLoopInteger"
     },
@@ -121,7 +146,7 @@
       "operandA": 3,
       "operandB": 4,
       "operation": "add",
-      "index": 12,
+      "index": 16,
       "enabled": true,
       "elementType": "ZestAssignCalc"
     }
