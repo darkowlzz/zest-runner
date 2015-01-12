@@ -14,6 +14,26 @@ function Runtime () {
 
 Runtime.prototype = {
 
+  // Run a block of statements
+  runBlock: function (block) {
+    var that = this;
+    var syncLoop = new utils.SyncLoop();
+    var countStmt = 0;
+    return Q.Promise(function (resolve, reject) {
+      syncLoop.syncLoop(block.length, function (l) {
+        that.run.call(that, block[countStmt])
+        .then(function () {
+          countStmt++;
+          if (countStmt === block.length) {
+            resolve(true);
+          }
+          l.next();
+        });
+      });
+    });
+  },
+
+  // Run a statement
   run: function (stmt) {
     var that = this;
     return Q.Promise(function (resolve, reject) {
@@ -26,6 +46,18 @@ Runtime.prototype = {
           break;
 
         case 'ZestConditional':
+          if (that.globals[stmt.rootExpression.variableName] ===
+              stmt.rootExpression.value) {
+            that.runBlock(stmt.ifStatements)
+            .then(function () {
+              resolve(true);
+            });
+          } else {
+            that.runBlock(stmt.elseStatements)
+            .then(function () {
+              resolve(true);
+            });
+          }
           break;
 
         case 'ZestAssignString':
@@ -106,10 +138,12 @@ Runtime.prototype = {
 
         case 'ZestActionPrint':
           var globals = that.globals;
-          var message = stmt.message.replace(/({{\w+}})/g, function (matchWord) {
-            var variables = matchWord.match(/(\w+)/g);
+          var message = stmt.message.replace(/({{\w+}})/g,
+            function (matchWord) {
+              var variables = matchWord.match(/(\w+)/g);
             //return globals[variables[0]];
-          });
+            }
+          );
           resolve(true);
           break;
 

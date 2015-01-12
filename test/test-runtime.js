@@ -132,4 +132,27 @@ describe('test zest runner', function () {
       done();
     })
   });
+
+  describe('should run conditionals', function () {
+    it('should run conditional if block', function (done) {
+      this.timeout(1000);
+      runtime.run(zc.getStatement(21))
+      .then(function (r) {
+        return runtime.run(zc.getStatement(22));
+      })
+      .then(function () {
+        runtime.globals.varX.should.be.exactly('5');
+        done();
+      });
+    });
+
+    it('should run conditional else block', function (done) {
+      this.timeout(3000);
+      runtime.run(zc.getStatement(22))
+      .then(function (r) {
+        runtime.globals.varX.should.be.exactly('4');
+        done();
+      });
+    });
+  });
 });
