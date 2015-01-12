@@ -9,6 +9,8 @@ SyncLoop.prototype = {
    * @param {number} iterations - Number of iterations.
    * @param {function} process - Function to be executed in the loop.
    * @param {function} exit - Function to be executed at the end of loop.
+   *
+   * credit: Isaac Whitfield (zackehh.com)
    */
   syncLoop: function (iterations, process, exit) {
     var index = 0,

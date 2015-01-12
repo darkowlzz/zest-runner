@@ -29,7 +29,7 @@ describe('test zest runner', function () {
     this.timeout(9000);
     runtime.run(zc.getStatement(4))
     .then(function () {
-      runtime.globals.var3.should.be.a.Number;
+      runtime.globals.var3.should.be.a.String;
       done();
     });
   });
