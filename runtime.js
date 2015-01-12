@@ -19,6 +19,7 @@ Runtime.prototype = {
     return Q.Promise(function (resolve, reject) {
       switch (stmt.elementType) {
         case 'ZestComment':
+          resolve(true);
           break;
 
         case 'ZestRequest':
@@ -33,7 +34,8 @@ Runtime.prototype = {
           break;
 
         case 'ZestAssignRandomInteger':
-          that.globals[stmt.variableName] = rand.intBetween(stmt.minInt, stmt.maxInt);
+          that.globals[stmt.variableName] = 
+            (rand.intBetween(stmt.minInt, stmt.maxInt)).toString();
           resolve(true);
           break;
 
@@ -69,7 +71,8 @@ Runtime.prototype = {
             var count2 = 0;
             var syncLoop2 = new utils.SyncLoop();
             syncLoop2.syncLoop(stmt.statements.length, function(loop2) {
-              that.run.call(that, stmt.statements[count2]).then(function () {
+              that.run.call(that, stmt.statements[count2])
+              .then(function () {
                 count2++;
                 if (count2 === stmt.statements.length) {
                   count++;
