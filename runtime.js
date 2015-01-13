@@ -161,6 +161,8 @@ Runtime.prototype = {
           break;
 
         case 'ZestActionFail':
+          that.log('Failed:', stmt.message);
+          resolve('fail');
           break;
 
         case 'ZestAssignCalc':

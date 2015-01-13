@@ -33,6 +33,13 @@
       "elementType": "ZestAssignString"
     },
     {
+      "message": "boom!",
+      "priority": "HIGH",
+      "index": 26,
+      "enabled": true,
+      "elementType": "ZestActionFail"
+    },
+    {
       "minInt": 5,
       "maxInt": 20,
       "variableName": "var3",

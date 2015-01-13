@@ -36,7 +36,8 @@ function ZestRunner (opts) {
     debug: false
   });
 
-  this.runtime = new Runtime();
+  this.runtime = new Runtime({debug: this.config.debug});
+  this.count = 0;
 }
 
 ZestRunner.prototype = {
@@ -44,17 +45,21 @@ ZestRunner.prototype = {
   run: function () {
     var that = this;
     var syncLoop1 = new utils.SyncLoop();
-    var count = 0;
+    that.count = 0;
     return Q.Promise(function (resolve, reject) {
       syncLoop1.syncLoop(that.script.statements.length, function (loop) {
-        that.runtime.run(that.script.statements[count])
-        .then(function () {
-          that.log('ran statement', count);
-          count++;
-          if (count === that.script.statements.length) {
+        that.runtime.run(that.script.statements[that.count])
+        .then(function (r) {
+          if (r === 'fail') {
+            that.log('STOP', r);
             resolve(true);
+          } else {
+            that.count++;
+            if (that.count === that.script.statements.length) {
+              resolve(true);
+            }
+            loop.next();
           }
-          loop.next();
         });
       });
     });
