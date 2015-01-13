@@ -204,7 +204,8 @@ describe('==== test zest runtime ====', function () {
     this.timeout(TIME);
     runtime.run(zc.getStatement(26))
     .then(function (r) {
-      r.should.be.exactly('fail');
+      r[0].should.be.exactly('fail');
+      r[1].should.be.exactly('boom! berry');
       done();
     })
     .catch(function (err) {
