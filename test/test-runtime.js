@@ -5,10 +5,10 @@ var ZestCreator = require('zest-creator'),
     should      = require('should');
 
 
-describe('test zest runner', function () {
+describe('==== test zest runtime ====', function () {
   var zc = new ZestCreator({file: 'testData/sampleDataSet.js',
                             debug: true});
-  var runtime = new Runtime();
+  var runtime = new Runtime({debug: true});
 
   it('should run assignString', function (done) {
     this.timeout(9000);
@@ -22,6 +22,9 @@ describe('test zest runner', function () {
         var2: 'berry'
       });
       done();
+    })
+    .catch(function (err) {
+      done(err);
     });
   });
 
@@ -31,6 +34,9 @@ describe('test zest runner', function () {
     .then(function () {
       runtime.globals.var3.should.be.a.String;
       done();
+    })
+    .catch(function (err) {
+      done(err);
     });
   });
 
@@ -40,6 +46,9 @@ describe('test zest runner', function () {
     .then(function () {
       runtime.globals.var1.should.be.exactly('aggle');
       done();
+    })
+    .catch(function (err) {
+      done(err);
     });
   });
 
@@ -53,13 +62,20 @@ describe('test zest runner', function () {
       runtime.globals.var4.should.be.exactly('oranges are oranges');
       done();
     })
+    .catch(function (err) {
+      done(err);
+    });
   });
 
   it('should run actionPrint', function (done) {
     this.timeout(9000);
-    runtime.run(zc.getStatement(10))
-    .then(function () {
+    runtime.run(zc.getStatement(11))
+    .then(function (message) {
+      message.should.be.exactly('yo');
       done();
+    })
+    .catch(function (err) {
+      done(err);
     });
     // FIXME: Test it
   });
@@ -75,6 +91,9 @@ describe('test zest runner', function () {
       runtime.globals.m.should.be.exactly('8');
       done();
     })
+    .catch(function (err) {
+      done(err);
+    });
   });
 
   it('should run loopInteger', function (done) {
