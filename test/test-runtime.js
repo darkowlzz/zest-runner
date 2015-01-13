@@ -4,6 +4,7 @@ var ZestCreator = require('zest-creator'),
     Runtime     = require('../runtime'),
     should      = require('should');
 
+var TIME = 9000;
 
 describe('==== test zest runtime ====', function () {
   var zc = new ZestCreator({file: 'testData/sampleDataSet.js',
@@ -11,7 +12,7 @@ describe('==== test zest runtime ====', function () {
   var runtime = new Runtime({debug: true});
 
   it('should run assignString', function (done) {
-    this.timeout(9000);
+    this.timeout(TIME);
     runtime.run(zc.getStatement(2))
     .then(function () {
       return runtime.run(zc.getStatement(3));
@@ -29,7 +30,7 @@ describe('==== test zest runtime ====', function () {
   });
 
   it('should run assignRandomInteger', function (done) {
-    this.timeout(9000);
+    this.timeout(TIME);
     runtime.run(zc.getStatement(4))
     .then(function () {
       runtime.globals.var3.should.be.a.String;
@@ -41,7 +42,7 @@ describe('==== test zest runtime ====', function () {
   });
 
   it('should run assignReplace', function (done) {
-    this.timeout(9000);
+    this.timeout(TIME);
     runtime.run(zc.getStatement(5))
     .then(function () {
       runtime.globals.var1.should.be.exactly('aggle');
@@ -53,7 +54,7 @@ describe('==== test zest runtime ====', function () {
   });
 
   it('should replace with regex', function (done) {
-    this.timeout(9000);
+    this.timeout(TIME);
     runtime.run(zc.getStatement(6))
     .then(function () {
       return runtime.run(zc.getStatement(7));
@@ -68,7 +69,7 @@ describe('==== test zest runtime ====', function () {
   });
 
   it('should run actionPrint', function (done) {
-    this.timeout(9000);
+    this.timeout(TIME);
     runtime.run(zc.getStatement(11))
     .then(function (message) {
       message.should.be.exactly('yo');
@@ -97,49 +98,64 @@ describe('==== test zest runtime ====', function () {
   });
 
   it('should run loopInteger', function (done) {
-    this.timeout(9000);
+    this.timeout(TIME);
     runtime.globals.m.should.be.exactly('8');
     runtime.run(zc.getStatement(13))
     .then(function () {
       runtime.globals.m.should.be.exactly('18');
       done();
+    })
+    .catch(function (err) {
+      done(err);
     });
   });
 
   describe('should run assignCalc', function () {
     it('should add', function (done) {
-      this.timeout(9000);
+      this.timeout(TIME);
       runtime.run(zc.getStatement(16))
       .then(function () {
         runtime.globals.z.should.be.exactly('7');
         done();
+      })
+      .catch(function (err) {
+        done(err);
       });
     });
 
     it('should subtract', function (done) {
-      this.timeout(9000);
+      this.timeout(TIME);
       runtime.run(zc.getStatement(17))
       .then(function () {
         runtime.globals.z.should.be.exactly('0');
         done();
+      })
+      .catch(function (err) {
+        done(err);
       });
     });
 
     it('should multiply', function (done) {
-      this.timeout(9000);
+      this.timeout(TIME);
       runtime.run(zc.getStatement(18))
       .then(function () {
         runtime.globals.z.should.be.exactly('12');
         done();
+      })
+      .catch(function (err) {
+        done(err);
       });
     });
 
     it('should divide', function (done) {
-      this.timeout(9000);
+      this.timeout(TIME);
       runtime.run(zc.getStatement(19))
       .then(function () {
         runtime.globals.z.should.be.exactly('2');
         done();
+      })
+      .catch(function (err) {
+        done(err);
       });
     });
   });
@@ -150,6 +166,9 @@ describe('==== test zest runtime ====', function () {
     .then(function (r) {
       done();
     })
+    .catch(function (err) {
+      done(err);
+    });
   });
 
   describe('should run conditionals', function () {
@@ -162,6 +181,9 @@ describe('==== test zest runtime ====', function () {
       .then(function () {
         runtime.globals.varX.should.be.exactly('5');
         done();
+      })
+      .catch(function (err) {
+        done(err);
       });
     });
 
@@ -171,7 +193,22 @@ describe('==== test zest runtime ====', function () {
       .then(function (r) {
         runtime.globals.varX.should.be.exactly('4');
         done();
+      })
+      .catch(function (err) {
+        done(err);
       });
+    });
+  });
+
+  it('should run actionFail', function (done) {
+    this.timeout(TIME);
+    runtime.run(zc.getStatement(26))
+    .then(function (r) {
+      r.should.be.exactly('fail');
+      done();
+    })
+    .catch(function (err) {
+      done(err);
     });
   });
 });

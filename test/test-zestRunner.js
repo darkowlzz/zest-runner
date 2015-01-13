@@ -4,15 +4,33 @@ var ZestRunner = require('../'),
     should     = require('should');
 
 
+var fileWithFail = 'testData/dataSetFail.js';
+var fileFull = 'testData/sampleDataSet.js';
+
 describe('==== test zest runner ====', function () {
   var opts = {
     sourceType: 'file',
-    file: 'testData/sampleDataSet.js'
+    file: fileWithFail
     ,debug: true
   };
   var zestRunner = new ZestRunner(opts);
-  it('should run the script', function (done) {
+  it('script should fail after 4 statements', function (done) {
     this.timeout(2000);
+    zestRunner.run()
+    .then(function () {
+      zestRunner.count.should.be.exactly(3);
+      done();
+    })
+    .catch(function (err) {
+      done(err);
+    });
+  });
+
+  it('should run the whole script', function (done) {
+    this.timeout(2000);
+    opts.file = fileFull;
+    zestRunner = new ZestRunner(opts);
+
     zestRunner.run()
     .then(function (r) {
       zestRunner.runtime.globals.should.have.properties({
@@ -24,5 +42,8 @@ describe('==== test zest runner ====', function () {
       });
       done();
     })
+    .catch(function (err) {
+      done(err);
+    });
   });
 });
