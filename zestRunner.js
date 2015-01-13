@@ -49,7 +49,7 @@ ZestRunner.prototype = {
       syncLoop1.syncLoop(that.script.statements.length, function (loop) {
         that.runtime.run(that.script.statements[count])
         .then(function () {
-          that.log('stmt ran', count);
+          that.log('ran statement', count);
           count++;
           if (count === that.script.statements.length) {
             resolve(true);
@@ -63,7 +63,7 @@ ZestRunner.prototype = {
   // Print debug statements
   log: function (message, args) {
     if (this.config.debug) {
-      console.log(message, args);
+      console.log('DEBUG:', message, args);
     }
   }
 };

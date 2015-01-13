@@ -8,11 +8,24 @@ var _     = require('lodash'),
     Q     = require('q');
 
 
-function Runtime () {
+function Runtime (opts) {
+  opts = opts || {};
+
+  this.config = _.defaults(opts, {
+    debug: false
+  });
+
   this.globals = {};
 }
 
 Runtime.prototype = {
+
+  // Print debug statements
+  log: function (message, args) {
+    if (this.config.debug) {
+      console.log('DEBUG: ', message, args);
+    }
+  },
 
   // Run a block of statements
   runBlock: function (block) {
@@ -36,6 +49,7 @@ Runtime.prototype = {
   // Run a statement
   run: function (stmt) {
     var that = this;
+    that.log('running statement: ', [stmt.index, stmt.elementType]);
     return Q.Promise(function (resolve, reject) {
       switch (stmt.elementType) {
         case 'ZestComment':
@@ -99,22 +113,14 @@ Runtime.prototype = {
           var count = 0;
           var syncLoop1 = new utils.SyncLoop();
           syncLoop1.syncLoop(tokens.length, function(loop) {
-            that.globals[loopVar] = tokens[i];
-            var count2 = 0;
-            var syncLoop2 = new utils.SyncLoop();
-            syncLoop2.syncLoop(stmt.statements.length, function(loop2) {
-              that.run.call(that, stmt.statements[count2])
-              .then(function () {
-                count2++;
-                if (count2 === stmt.statements.length) {
-                  count++;
-                  if (count === stmt.set.tokens.length) {
-                    resolve(true);
-                  }
-                  loop.next();
-                }
-                loop2.next();
-              });
+            that.globals[loopVar] = tokens[count];
+            that.runBlock(stmt.statements)
+            .then(function () {
+              count++;
+              if (count === stmt.set.tokens.length) {
+                resolve(true);
+              }
+              loop.next();
             });
           });
           break;
@@ -141,10 +147,11 @@ Runtime.prototype = {
           var message = stmt.message.replace(/({{\w+}})/g,
             function (matchWord) {
               var variables = matchWord.match(/(\w+)/g);
-            //return globals[variables[0]];
+              return globals[variables[0]];
             }
           );
-          resolve(true);
+          that.log('print: ', message);
+          resolve(message);
           break;
 
         case 'ZestActionSleep':

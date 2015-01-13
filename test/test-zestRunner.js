@@ -4,11 +4,11 @@ var ZestRunner = require('../'),
     should     = require('should');
 
 
-describe('test zest runner', function () {
+describe('==== test zest runner ====', function () {
   var opts = {
     sourceType: 'file',
     file: 'testData/sampleDataSet.js'
-    //,debug: true
+    ,debug: true
   };
   var zestRunner = new ZestRunner(opts);
   it('should run the script', function (done) {
