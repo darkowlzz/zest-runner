@@ -2,10 +2,11 @@
 
 module.exports = Runtime;
 
-var _     = require('lodash'),
-    rand  = require('random-seed').create(),
-    utils = require('./utils'),
-    Q     = require('q');
+var _       = require('lodash'),
+    rand    = require('random-seed').create(),
+    utils   = require('./utils'),
+    Q       = require('q'),
+    request = require('request');
 
 
 function Runtime (opts) {
@@ -25,6 +26,17 @@ Runtime.prototype = {
     if (this.config.debug) {
       console.log('DEBUG: ', message, args);
     }
+  },
+
+  findAndReplace: function (msg) {
+    var globals = this.globals;
+    var message = msg.replace(/({{\w+}})/g,
+      function (matchWord) {
+        var variables = matchWord.match(/(\w+)/g);
+        return globals[variables[0]];
+      }
+    );
+    return message;
   },
 
   // Run a block of statements
@@ -143,14 +155,8 @@ Runtime.prototype = {
           break;
 
         case 'ZestActionPrint':
-          var globals = that.globals;
-          var message = stmt.message.replace(/({{\w+}})/g,
-            function (matchWord) {
-              var variables = matchWord.match(/(\w+)/g);
-              return globals[variables[0]];
-            }
-          );
-          that.log('print: ', message);
+          var message = that.findAndReplace(stmt.message);
+          that.log('print:', message);
           resolve(message);
           break;
 
@@ -161,8 +167,9 @@ Runtime.prototype = {
           break;
 
         case 'ZestActionFail':
-          that.log('Failed:', stmt.message);
-          resolve('fail');
+          var message = that.findAndReplace(stmt.message)
+          that.log('Failed:', message);
+          resolve(['fail', message]);
           break;
 
         case 'ZestAssignCalc':

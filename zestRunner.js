@@ -50,7 +50,7 @@ ZestRunner.prototype = {
       syncLoop1.syncLoop(that.script.statements.length, function (loop) {
         that.runtime.run(that.script.statements[that.count])
         .then(function (r) {
-          if (r === 'fail') {
+          if (r[0] === 'fail') {
             that.log('STOP', r);
             resolve(true);
           } else {
