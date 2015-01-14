@@ -212,4 +212,17 @@ describe('==== test zest runtime ====', function () {
       done(err);
     });
   });
+
+  /*
+  it('should run request', function (done) {
+    this.timeout(15000);
+    runtime.run(zc.getStatement(27))
+    .then(function () {
+      done();
+    })
+    .catch(function (err) {
+      done(err);
+    });
+  });
+  */
 });

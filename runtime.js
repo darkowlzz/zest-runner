@@ -28,6 +28,7 @@ Runtime.prototype = {
     }
   },
 
+  // Find variables in message string and replace them with values.
   findAndReplace: function (msg) {
     var globals = this.globals;
     var message = msg.replace(/({{\w+}})/g,
@@ -58,6 +59,77 @@ Runtime.prototype = {
     });
   },
 
+  /**
+   * Get variable value from a string variable name, like 'response.body'
+   * @param {string} name - String name of the variable
+   *
+   * @return {any} value - Value of the variable.
+   */
+  getValue: function (name) {
+    var that = this,
+        value = that.globals;
+
+    var parts = name.split('.');
+    parts.forEach(function (part) {
+      value = value[part];
+    });
+    return value;
+  },
+
+  evalExpression: function (exp) {
+    var that = this;
+    switch(exp.elementType) {
+      case 'ZestExpressionStatusCode':
+        if (exp.code === that.globals.response.statusCode) {
+          return true;
+        } else {
+          return false;
+        }
+        break;
+
+      case 'ZestExpressionLength':
+        that.log(exp.variableName + '.length:', that.getValue(exp.variableName).length);
+        var approx = exp.length * exp.approx / 100;
+        that.log('approx:', '+/- ' + approx);
+        var upperLimit = exp.length + approx;
+        that.log('upperLimit:', upperLimit);
+        var lowerLimit = exp.length - approx;
+        that.log('lowerLimit:', lowerLimit);
+        if ((that.getValue(exp.variableName).length >= lowerLimit) &&
+            (that.getValue(exp.variableName).length <= upperLimit)) {
+          return true;
+        } else {
+          return false;
+        }
+        break;
+
+      case 'ZestExpressionRegex':
+        var flags = 'g';
+        if (! exp.caseExact) {
+          flags += 'i';
+        }
+        var re = new RegExp(exp.regex, flags);
+        if (that.getValue(exp.variableName).search(re) > -1) {
+          return true;
+        } else {
+          return false;
+        }
+        break;
+
+      case 'ZestExpressionURL':
+        break;
+
+      case 'ZestExpressionEquals':
+        break;
+
+      case 'ZestExpressionResponseTime':
+        break;
+
+      default:
+        throw 'Unknown expression';
+    }
+  },
+
   // Run a statement
   run: function (stmt) {
     var that = this;
@@ -69,6 +141,19 @@ Runtime.prototype = {
           break;
 
         case 'ZestRequest':
+          request(stmt.url, function (error, response, body) {
+            if (!error) {
+              /*
+              console.log('response:');
+              console.log(response);
+              console.log('body');
+              console.log(body);
+              */
+              resolve(true);
+            } else {
+              resolve('error in request');
+            }
+          });
           break;
 
         case 'ZestConditional':
