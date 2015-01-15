@@ -115,5 +115,33 @@
     "excludeRegexes": [],
     "not": false,
     "elementType": "ZestExpressionURL"
+  },
+  {
+    "value": "http://eXample.com",
+    "variableName": "response.url",
+    "caseExact": false,
+    "not": false,
+    "elementType": "ZestExpressionEquals"
+  },
+  {
+    "value": "http://example.co",
+    "variableName": "response.url",
+    "caseExact": false,
+    "not": false,
+    "elementType": "ZestExpressionEquals"
+  },
+  {
+    "value": "http://eXample.com",
+    "variableName": "response.url",
+    "caseExact": true,
+    "not": false,
+    "elementType": "ZestExpressionEquals"
+  },
+  {
+    "value": "http://eXample.com",
+    "variableName": "response.url",
+    "caseExact": true,
+    "not": true,
+    "elementType": "ZestExpressionEquals"
   }
 ]

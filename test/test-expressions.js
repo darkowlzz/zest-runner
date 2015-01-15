@@ -108,4 +108,26 @@ describe('==== test zest expressions ====', function () {
       result.should.be.false;
     });
   });
+
+  describe('should evaluate ZestExpressionEquals', function () {
+    it('should evaluate to true for response.url', function () {
+      var result = runtime.evalExpression(expressions[16]);
+      result.should.be.true;
+    });
+
+    it('should evaluate to false for response.url', function () {
+      var result = runtime.evalExpression(expressions[17]);
+      result.should.be.false;
+    });
+
+    it('should evaluate to false due to unmatched case', function () {
+      var result = runtime.evalExpression(expressions[18]);
+      result.should.be.false;
+    });
+
+    it('should evaluate to true due to inverse', function () {
+      var result = runtime.evalExpression(expressions[19]);
+      result.should.be.true;
+    });
+  });
 });

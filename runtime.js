@@ -85,12 +85,13 @@ Runtime.prototype = {
 
   evalExpression: function (exp) {
     var that = this;
+    var result;
     switch(exp.elementType) {
       case 'ZestExpressionStatusCode':
-        if (exp.code === that.globals.response.statusCode) {
-          return true;
+        if (_.isEqual(exp.code, that.globals.response.statusCode)) {
+          result = true;
         } else {
-          return false;
+          result = false;
         }
         break;
 
@@ -104,9 +105,9 @@ Runtime.prototype = {
         that.log('lowerLimit:', lowerLimit);
         if ((that.getValue(exp.variableName).length >= lowerLimit) &&
             (that.getValue(exp.variableName).length <= upperLimit)) {
-          return true;
+          result = true;
         } else {
-          return false;
+          result = false;
         }
         break;
 
@@ -117,14 +118,14 @@ Runtime.prototype = {
         }
         var re = new RegExp(exp.regex, flags);
         if (that.getValue(exp.variableName).search(re) > -1) {
-          return true;
+          result = true;
         } else {
-          return false;
+          result = false;
         }
         break;
 
       case 'ZestExpressionURL':
-        var result = false;
+        result = false;
         that.log('url:', that.globals.response.url);
         that.log('includeRegexes:', exp.includeRegexes);
         that.log('excludeRegexes:', exp.excludeRegexes);
@@ -148,6 +149,28 @@ Runtime.prototype = {
         break;
 
       case 'ZestExpressionEquals':
+        var result,
+            expected = exp.value,
+            real = that.getValue(exp.variableName);
+        that.log('response.url:', that.getValue(exp.variableName));
+        that.log('value:', exp.value);
+        if (! exp.caseExact) {
+          console.log('making small');
+          expected = expected.toLowerCase();
+          console.log(expected);
+          real = real.toLowerCase();
+          console.log(real);
+        }
+        if (_.isEqual(expected, real)) {
+          result = true;
+        } else {
+          result = false;
+        }
+        if (exp.not) {
+          return ! result;
+        } else {
+          return result;
+        }
         break;
 
       case 'ZestExpressionResponseTime':
@@ -155,6 +178,12 @@ Runtime.prototype = {
 
       default:
         throw 'Unknown expression';
+    }
+
+    if (exp.not) {
+      return ! result;
+    } else {
+      return result;
     }
   },
 
@@ -185,8 +214,8 @@ Runtime.prototype = {
           break;
 
         case 'ZestConditional':
-          if (that.globals[stmt.rootExpression.variableName] ===
-              stmt.rootExpression.value) {
+          if (_.isEqual(that.getValue(stmt.rootExpression.variableName),
+                        stmt.rootExpression.value)) {
             that.runBlock(stmt.ifStatements)
             .then(function () {
               resolve(true);
@@ -220,7 +249,7 @@ Runtime.prototype = {
           } else {
             var re = new RegExp(stmt.replace, 'g');
           }
-          that.globals[stmt.variableName] = that.globals[stmt.variableName].replace(
+          that.globals[stmt.variableName] = that.getValue(stmt.variableName).replace(
                                          re, stmt.replacement
                                        );
           resolve(true);
@@ -290,13 +319,13 @@ Runtime.prototype = {
           if (typeof(stmt.operandA) === 'number') {
             var oprndA = stmt.operandA;
           } else {
-            var oprndA = parseFloat(that.globals[stmt.operandA]);
+            var oprndA = parseFloat(that.getValue(stmt.operandA));
           }
 
           if (typeof(stmt.operandB) === 'number') {
             var oprndB = stmt.operandB;
           } else {
-            var oprndB = parseFloat(that.globals[stmt.operandB]);
+            var oprndB = parseFloat(that.getValue(stmt.operandB));
           }
 
           switch (stmt.operation) {
