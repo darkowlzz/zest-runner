@@ -71,5 +71,49 @@
     "caseExact": false,
     "not": false,
     "elementType": "ZestExpressionRegex"
+  },
+  {
+    "regex": "Patterns",
+    "variableName": "aVar",
+    "caseExact": false,
+    "not": false,
+    "elementType": "ZestExpressionRegex"
+  },
+  {
+    "includeRegexes": [
+      "foo",
+      "bar",
+      "example"
+    ],
+    "excludeRegexes": [],
+    "not": false,
+    "elementType": "ZestExpressionURL"
+  },
+  {
+    "includeRegexes": [
+      "foo",
+      "bar",
+      "example"
+    ],
+    "excludeRegexes": [
+      "example"
+    ],
+    "not": false,
+    "elementType": "ZestExpressionURL"
+  },
+  {
+    "includeRegexes": [
+    ],
+    "excludeRegexes": [
+      "example"
+    ],
+    "not": false,
+    "elementType": "ZestExpressionURL"
+  },
+  {
+    "includeRegexes": [],
+    "excludeRegexes": [],
+    "not": false,
+    "elementType": "ZestExpressionURL"
   }
 ]

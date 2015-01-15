@@ -76,6 +76,13 @@ Runtime.prototype = {
     return value;
   },
 
+  isPatternFound: function (pattern, subject) {
+    var that = this;
+    // FIXME: create proper regex for true regex
+    var re = new RegExp(pattern, 'gi');
+    return re.test(subject);
+  },
+
   evalExpression: function (exp) {
     var that = this;
     switch(exp.elementType) {
@@ -117,6 +124,27 @@ Runtime.prototype = {
         break;
 
       case 'ZestExpressionURL':
+        var result = false;
+        that.log('url:', that.globals.response.url);
+        that.log('includeRegexes:', exp.includeRegexes);
+        that.log('excludeRegexes:', exp.excludeRegexes);
+        if (! _.isEmpty(exp.includeRegexes)) {
+          exp.includeRegexes.some(function (pattern) {
+            if (that.isPatternFound(pattern, that.globals.response.url)) {
+              result = true;
+              return true;
+            }
+          });
+        }
+        if (! _.isEmpty(exp.excludeRegexes)) {
+          exp.excludeRegexes.some(function (pattern) {
+            if (that.isPatternFound(pattern, that.globals.response.url)) {
+              result = false;
+              return true;
+            }
+          });
+        }
+        return result;
         break;
 
       case 'ZestExpressionEquals':
