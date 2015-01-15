@@ -149,15 +149,13 @@ Runtime.prototype = {
         break;
 
       case 'ZestExpressionEquals':
-        var result,
-            expected = exp.value,
+        var expected = exp.value,
             real = that.getValue(exp.variableName);
         that.log('response.url:', that.getValue(exp.variableName));
         that.log('value:', exp.value);
         if (! exp.caseExact) {
-          console.log('making small');
+          that.log('lowering case', '');
           expected = expected.toLowerCase();
-          console.log(expected);
           real = real.toLowerCase();
           console.log(real);
         }
@@ -166,14 +164,18 @@ Runtime.prototype = {
         } else {
           result = false;
         }
-        if (exp.not) {
-          return ! result;
-        } else {
-          return result;
-        }
         break;
 
       case 'ZestExpressionResponseTime':
+        var expected = exp.timeInMs,
+            real = that.globals.response.responseTimeInMs;
+        that.log('real TimeInMs:', real);
+        that.log('expected TimeInMs:', expected);
+        if (exp.greaterThan) {
+          result = (real > expected);
+        } else {
+          result = (_.isEqual(real, expected));
+        }
         break;
 
       default:

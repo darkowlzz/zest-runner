@@ -143,5 +143,29 @@
     "caseExact": true,
     "not": true,
     "elementType": "ZestExpressionEquals"
+  },
+  {
+    "greaterThan": true,
+    "timeInMs": 2070,
+    "not": false,
+    "elementType": "ZestExpressionResponseTime"
+  },
+  {
+    "greaterThan": false,
+    "timeInMs": 2070,
+    "not": false,
+    "elementType": "ZestExpressionResponseTime"
+  },
+  {
+    "greaterThan": false,
+    "timeInMs": 3672,
+    "not": false,
+    "elementType": "ZestExpressionResponseTime"
+  },
+  {
+    "greaterThan": false,
+    "timeInMs": 3672,
+    "not": true,
+    "elementType": "ZestExpressionResponseTime"
   }
 ]
