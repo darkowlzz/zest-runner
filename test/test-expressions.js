@@ -16,7 +16,7 @@ describe('==== test zest expressions ====', function () {
     body: 'Zest is an experimental specialized scripting language', //length: 54
     url: 'http://example.com',
     headers: 'HTTP/1.1 200 OK\r\nAccept-Ranges: bytes\r\nCache-Control: max-age\u003d604800\r\nContent-Type: text/html\r',
-    responseTimeInMs: 672
+    responseTimeInMs: 3672
   };
   runtime.globals.foo = 'mozilla';
   runtime.globals.aVar = 'Regular expressions are patterns used to match...';
@@ -128,6 +128,28 @@ describe('==== test zest expressions ====', function () {
     it('should evaluate to true due to inverse', function () {
       var result = runtime.evalExpression(expressions[19]);
       result.should.be.true;
+    });
+  });
+
+  describe('should evaluate ZestExpressionResponseTime', function () {
+    it('should evaluate to true with greaterThan', function () {
+      var result = runtime.evalExpression(expressions[20]);
+      result.should.be.true;
+    });
+
+    it('should evaluate to false without greaterThan', function () {
+      var result = runtime.evalExpression(expressions[21]);
+      result.should.be.false;
+    });
+
+    it('should evaluate to true without greaterThan', function () {
+      var result = runtime.evalExpression(expressions[22]);
+      result.should.be.true;
+    });
+
+    it('should evaluate to false due to inverse', function () {
+      var result = runtime.evalExpression(expressions[23]);
+      result.should.be.false;
     });
   });
 });
