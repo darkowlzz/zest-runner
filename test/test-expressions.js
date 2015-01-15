@@ -19,6 +19,7 @@ describe('==== test zest expressions ====', function () {
     responseTimeInMs: 672
   };
   runtime.globals.foo = 'mozilla';
+  runtime.globals.aVar = 'Regular expressions are patterns used to match...';
 
   describe('should evaluate ZestExpressionStatusCode', function () {
     it('should evaluate to true', function () {
@@ -78,6 +79,33 @@ describe('==== test zest expressions ====', function () {
     it('should evaluate response.body to true', function () {
       var result = runtime.evalExpression(expressions[10]);
       result.should.be.true;
+    });
+
+    it('should evaluate common variable name to true', function () {
+      var result = runtime.evalExpression(expressions[11]);
+      result.should.be.true;
+    });
+  });
+
+  describe('should evaluate ZestExpressionURL', function () {
+    it('should evaluate to true for includeRegexes only', function () {
+      var result = runtime.evalExpression(expressions[12]);
+      result.should.be.true;
+    });
+
+    it('should evaluate to false for common include and exclude', function () {
+      var result = runtime.evalExpression(expressions[13]);
+      result.should.be.false;
+    });
+
+    it('should evaluate to false for excludeRegexes only', function () {
+      var result = runtime.evalExpression(expressions[14]);
+      result.should.be.false;
+    });
+
+    it('should evaluate to false for no include and exclude', function () {
+      var result = runtime.evalExpression(expressions[15]);
+      result.should.be.false;
     });
   });
 });
