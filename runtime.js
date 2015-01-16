@@ -30,11 +30,13 @@ Runtime.prototype = {
 
   // Find variables in message string and replace them with values.
   findAndReplace: function (msg) {
-    var globals = this.globals;
-    var message = msg.replace(/({{\w+}})/g,
+    var that = this,
+        globals = that.globals;
+
+    var message = msg.replace(/({{\w+\.*\w*}})/g,
       function (matchWord) {
-        var variables = matchWord.match(/(\w+)/g);
-        return globals[variables[0]];
+        var variables = matchWord.match(/(\w+\.*\w*)/g);
+        return that.getValue(variables[0]);
       }
     );
     return message;
@@ -88,6 +90,8 @@ Runtime.prototype = {
     var result;
     switch(exp.elementType) {
       case 'ZestExpressionStatusCode':
+        that.log('expected statusCode: ', exp.code);
+        that.log('actual statusCode: ', that.globals.response.statusCode);
         if (_.isEqual(exp.code, that.globals.response.statusCode)) {
           result = true;
         } else {
@@ -200,14 +204,30 @@ Runtime.prototype = {
           break;
 
         case 'ZestRequest':
+          var startTime, stopTime;
+          that.globals.requestResult = true;
+          startTime = new Date().getTime();
           request(stmt.url, function (error, response, body) {
             if (!error) {
-              /*
-              console.log('response:');
-              console.log(response);
-              console.log('body');
-              console.log(body);
-              */
+              stopTime = new Date().getTime();
+              that.globals.response = {
+                url: response.request.uri.href,
+                data: '',
+                headers: '',
+                body: '',
+                statusCode: response.statusCode,
+                responseTimeInMs: (stopTime - startTime)
+              }
+              that.log('response: ', that.globals.response);
+              if (! _.isEmpty(stmt.assertions)) {
+                stmt.assertions.some(function (exp) {
+                  that.log('assertion expression:', exp.rootExpression.elementType);
+                  if (! that.evalExpression(exp.rootExpression)) {
+                    that.globals.requestResult = false;
+                    return true;
+                  };
+                });
+              }
               resolve(true);
             } else {
               resolve('error in request');

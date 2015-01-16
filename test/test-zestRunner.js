@@ -27,7 +27,7 @@ describe('==== test zest runner ====', function () {
   });
 
   it('should run the whole script', function (done) {
-    this.timeout(2000);
+    this.timeout(12000);
     opts.file = fileFull;
     zestRunner = new ZestRunner(opts);
 
