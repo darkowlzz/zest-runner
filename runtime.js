@@ -116,6 +116,8 @@ Runtime.prototype = {
         break;
 
       case 'ZestExpressionRegex':
+        that.log('variableName:', exp.variableName);
+        that.log('regex:', exp.regex);
         var flags = 'g';
         if (! exp.caseExact) {
           flags += 'i';
@@ -149,7 +151,6 @@ Runtime.prototype = {
             }
           });
         }
-        return result;
         break;
 
       case 'ZestExpressionEquals':
