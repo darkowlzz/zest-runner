@@ -236,6 +236,85 @@
       "index": 22,
       "enabled": true,
       "elementType": "ZestConditional"
+    },
+    {
+      "url": "http://example.com/",
+      "data": "",
+      "method": "GET",
+      "headers": "",
+      "response": {},
+      "assertions": [
+        {
+          "rootExpression": {
+            "code": 200,
+            "not": false,
+            "elementType": "ZestExpressionStatusCode"
+          },
+          "elementType": "ZestAssertion"
+        }
+      ],
+      "followRedirects": true,
+      "cookies": [],
+      "index": 27,
+      "elementType": "ZestRequest"
+    },
+    {
+      "url": "http://example.com/",
+      "data": "",
+      "method": "GET",
+      "headers": "",
+      "response": {},
+      "assertions": [
+        {
+          "rootExpression": {
+            "code": 201,
+            "not": false,
+            "elementType": "ZestExpressionStatusCode"
+          },
+          "elementType": "ZestAssertion"
+        }
+      ],
+      "followRedirects": true,
+      "cookies": [],
+      "index": 28,
+      "elementType": "ZestRequest"
+    },
+    {
+      "url": "http://example.com/",
+      "data": "",
+      "method": "GET",
+      "headers": "",
+      "response": {},
+      "assertions": [
+        {
+          "rootExpression": {
+            "code": 200,
+            "not": false,
+            "elementType": "ZestExpressionStatusCode"
+          },
+          "elementType": "ZestAssertion"
+        },
+        {
+          "rootExpression": {
+            "regex": "example.com",
+            "variableName": "response.url",
+            "caseExact": false,
+            "not": false,
+            "elementType": "ZestExpressionRegex"
+          },
+          "elementType": "ZestAssertion"
+        }
+      ],
+      "followRedirects": true,
+      "cookies": [],
+      "index": 29,
+      "elementType": "ZestRequest"
+    },
+    {
+      "message": "url was {{response.url}}",
+      "index": 30,
+      "enabled": true,
+      "elementType": "ZestActionPrint"
     }
   ],
   "authentication": [],
