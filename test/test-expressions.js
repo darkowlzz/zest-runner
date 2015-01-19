@@ -31,96 +31,94 @@ describe('==== test zest expressions ====', function () {
       var result = runtime.evalExpression(expressions[1]);
       result.should.be.false;
     }); 
+
+    it('should evaluate to true due to inverse', function () {
+      var result = runtime.evalExpression(expressions[2]);
+      result.should.be.true;
+    });
   });
 
   describe('should evaluate ZestExpressionLength', function () {
     it('should evaluate to true under +ve approx', function () {
-      var result = runtime.evalExpression(expressions[2]);
-      result.should.be.true;
-    });
-
-    it('should evaluate to true under -ve approx', function () {
       var result = runtime.evalExpression(expressions[3]);
       result.should.be.true;
     });
 
-    it('should evaluate to false', function () {
+    it('should evaluate to true under -ve approx', function () {
       var result = runtime.evalExpression(expressions[4]);
+      result.should.be.true;
+    });
+
+    it('should evaluate to false', function () {
+      var result = runtime.evalExpression(expressions[5]);
       result.should.be.false;
     });
 
     it('should evaluate response.url to true', function () {
-      var result = runtime.evalExpression(expressions[5]);
-      result.should.be.true;
-    });
-
-    it('should evaluate response.headers to true', function () {
       var result = runtime.evalExpression(expressions[6]);
       result.should.be.true;
     });
 
-    it('should evaluate common variable name to true', function () {
+    it('should evaluate response.headers to true', function () {
       var result = runtime.evalExpression(expressions[7]);
       result.should.be.true;
     });
-  });
 
-  describe('should evaluate ZestExpressionRegex', function () {
-    it('should evaluate to true with case-insensitive regex', function () {
+    it('should evaluate common variable name to true', function () {
       var result = runtime.evalExpression(expressions[8]);
       result.should.be.true;
     });
 
-    it('should evaluate to false with case-sensitive regex', function () {
+    it('should evaluate to false due to inverse', function () {
       var result = runtime.evalExpression(expressions[9]);
       result.should.be.false;
-    });
+    })
+  });
 
-    it('should evaluate response.body to true', function () {
+  describe('should evaluate ZestExpressionRegex', function () {
+    it('should evaluate to true with case-insensitive regex', function () {
       var result = runtime.evalExpression(expressions[10]);
       result.should.be.true;
     });
 
-    it('should evaluate common variable name to true', function () {
+    it('should evaluate to false with case-sensitive regex', function () {
       var result = runtime.evalExpression(expressions[11]);
-      result.should.be.true;
+      result.should.be.false;
     });
-  });
 
-  describe('should evaluate ZestExpressionURL', function () {
-    it('should evaluate to true for includeRegexes only', function () {
+    it('should evaluate response.body to true', function () {
       var result = runtime.evalExpression(expressions[12]);
       result.should.be.true;
     });
 
-    it('should evaluate to false for common include and exclude', function () {
+    it('should evaluate common variable name to true', function () {
       var result = runtime.evalExpression(expressions[13]);
+      result.should.be.true;
+    });
+
+    it('should evaluate to false due to inverse', function () {
+      var result = runtime.evalExpression(expressions[14]);
+      result.should.be.false;
+    })
+  });
+
+  describe('should evaluate ZestExpressionURL', function () {
+    it('should evaluate to true for includeRegexes only', function () {
+      var result = runtime.evalExpression(expressions[15]);
+      result.should.be.true;
+    });
+
+    it('should evaluate to false for common include and exclude', function () {
+      var result = runtime.evalExpression(expressions[16]);
       result.should.be.false;
     });
 
     it('should evaluate to false for excludeRegexes only', function () {
-      var result = runtime.evalExpression(expressions[14]);
-      result.should.be.false;
-    });
-
-    it('should evaluate to false for no include and exclude', function () {
-      var result = runtime.evalExpression(expressions[15]);
-      result.should.be.false;
-    });
-  });
-
-  describe('should evaluate ZestExpressionEquals', function () {
-    it('should evaluate to true for response.url', function () {
-      var result = runtime.evalExpression(expressions[16]);
-      result.should.be.true;
-    });
-
-    it('should evaluate to false for response.url', function () {
       var result = runtime.evalExpression(expressions[17]);
       result.should.be.false;
     });
 
-    it('should evaluate to false due to unmatched case', function () {
+    it('should evaluate to false for no include and exclude', function () {
       var result = runtime.evalExpression(expressions[18]);
       result.should.be.false;
     });
@@ -131,24 +129,46 @@ describe('==== test zest expressions ====', function () {
     });
   });
 
-  describe('should evaluate ZestExpressionResponseTime', function () {
-    it('should evaluate to true with greaterThan', function () {
+  describe('should evaluate ZestExpressionEquals', function () {
+    it('should evaluate to true for response.url', function () {
       var result = runtime.evalExpression(expressions[20]);
       result.should.be.true;
     });
 
-    it('should evaluate to false without greaterThan', function () {
+    it('should evaluate to false for response.url', function () {
       var result = runtime.evalExpression(expressions[21]);
       result.should.be.false;
     });
 
-    it('should evaluate to true without greaterThan', function () {
+    it('should evaluate to false due to unmatched case', function () {
       var result = runtime.evalExpression(expressions[22]);
+      result.should.be.false;
+    });
+
+    it('should evaluate to true due to inverse', function () {
+      var result = runtime.evalExpression(expressions[23]);
+      result.should.be.true;
+    });
+  });
+
+  describe('should evaluate ZestExpressionResponseTime', function () {
+    it('should evaluate to true with greaterThan', function () {
+      var result = runtime.evalExpression(expressions[24]);
+      result.should.be.true;
+    });
+
+    it('should evaluate to false without greaterThan', function () {
+      var result = runtime.evalExpression(expressions[25]);
+      result.should.be.false;
+    });
+
+    it('should evaluate to true without greaterThan', function () {
+      var result = runtime.evalExpression(expressions[26]);
       result.should.be.true;
     });
 
     it('should evaluate to false due to inverse', function () {
-      var result = runtime.evalExpression(expressions[23]);
+      var result = runtime.evalExpression(expressions[27]);
       result.should.be.false;
     });
   });

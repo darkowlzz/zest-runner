@@ -10,6 +10,11 @@
     "elementType": "ZestExpressionStatusCode"
   },
   {
+    "code": 200,
+    "not": true,
+    "elementType": "ZestExpressionStatusCode"
+  },
+  {
     "length": 50,
     "approx": 10,
     "variableName": "response.body",
@@ -52,6 +57,13 @@
     "elementType": "ZestExpressionLength"
   },
   {
+    "length": 7,
+    "approx": 0,
+    "variableName": "foo",
+    "not": true,
+    "elementType": "ZestExpressionLength"
+  },
+  {
     "regex": "Example",
     "variableName": "response.url",
     "caseExact": false,
@@ -77,6 +89,13 @@
     "variableName": "aVar",
     "caseExact": false,
     "not": false,
+    "elementType": "ZestExpressionRegex"
+  },
+  {
+    "regex": "Patterns",
+    "variableName": "aVar",
+    "caseExact": false,
+    "not": true,
     "elementType": "ZestExpressionRegex"
   },
   {
@@ -114,6 +133,12 @@
     "includeRegexes": [],
     "excludeRegexes": [],
     "not": false,
+    "elementType": "ZestExpressionURL"
+  },
+  {
+    "includeRegexes": [],
+    "excludeRegexes": [],
+    "not": true,
     "elementType": "ZestExpressionURL"
   },
   {
