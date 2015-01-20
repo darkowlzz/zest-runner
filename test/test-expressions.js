@@ -20,6 +20,7 @@ describe('==== test zest expressions ====', function () {
   };
   runtime.globals.foo = 'mozilla';
   runtime.globals.aVar = 'Regular expressions are patterns used to match...';
+  runtime.globals.aNum = '5';
 
   describe('should evaluate ZestExpressionStatusCode', function () {
     it('should evaluate to true', function () {
@@ -170,6 +171,23 @@ describe('==== test zest expressions ====', function () {
     it('should evaluate to false due to inverse', function () {
       var result = runtime.evalExpression(expressions[27]);
       result.should.be.false;
+    });
+  });
+
+  describe('should evaluate ZestExpressionIsInteger', function () {
+    it('should evaluate to true with an integer', function () {
+      var result = runtime.evalExpression(expressions[28]);
+      result.should.be.true;
+    });
+
+    it('should evaluate to false with a string', function () {
+      var result = runtime.evalExpression(expressions[29]);
+      result.should.be.false;
+    });
+
+    it('should evaluate to true with inverse', function () {
+      var result = runtime.evalExpression(expressions[30]);
+      result.should.be.true;
     });
   });
 });

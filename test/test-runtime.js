@@ -268,7 +268,7 @@ describe('==== test zest runtime ====', function () {
       .catch(function (err) {
         done(err);
       });
-    })
+    });
   });
 
 });

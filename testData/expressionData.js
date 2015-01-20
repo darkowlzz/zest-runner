@@ -192,5 +192,20 @@
     "timeInMs": 3672,
     "not": true,
     "elementType": "ZestExpressionResponseTime"
+  },
+  {
+    "variableName": "aNum",
+    "not": false,
+    "elementType": "ZestExpressionIsInteger"
+  },
+  {
+    "variableName": "foo",
+    "not": false,
+    "elementType": "ZestExpressionIsInteger"
+  },
+  {
+    "variableName": "foo",
+    "not": true,
+    "elementType": "ZestExpressionIsInteger"
   }
 ]
