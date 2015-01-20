@@ -183,6 +183,15 @@ Runtime.prototype = {
         }
         break;
 
+      case 'ZestExpressionIsInteger':
+        var num = parseInt(that.getValue(exp.variableName));
+        if (isNaN(num)) {
+          result = false;
+        } else {
+          result = true;
+        }
+        break;
+
       default:
         throw 'Unknown expression';
     }
@@ -207,15 +216,21 @@ Runtime.prototype = {
         case 'ZestRequest':
           var startTime, stopTime;
           that.globals.requestResult = true;
+          var options = {
+            url: stmt.url,
+            headers: stmt.headers || '',
+            body: stmt.data || '',
+            method: stmt.method
+          };
+          that.log('request options:', options);
           startTime = new Date().getTime();
-          request(stmt.url, function (error, response, body) {
+          request(options, function (error, response, body) {
             if (!error) {
               stopTime = new Date().getTime();
               that.globals.response = {
                 url: response.request.uri.href,
-                data: '',
                 headers: '',
-                body: '',
+                body: body,
                 statusCode: response.statusCode,
                 responseTimeInMs: (stopTime - startTime)
               }
