@@ -13,6 +13,8 @@
     "q": "^1.1.2",
     "random-seed": "^0.2.0",
     "request": "^2.51.0",
+    "simple-cookie": "0.0.8",
+    "simple-headers": "0.0.1",
     "zest-creator": "git://github.com/darkowlzz/zest-creator"
   },
   "devDependencies": {

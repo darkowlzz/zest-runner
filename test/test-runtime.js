@@ -269,6 +269,28 @@ describe('==== test zest runtime ====', function () {
         done(err);
       });
     });
+
+    it('should pass with body testing and extra cookies', function (done) {
+      this.timeout(15000);
+      runtime.run(zc.getStatement(31))
+      .then(function () {
+        runtime.globals.requestResult.should.be.true;
+        runtime.globals.request.should.have.properties({
+          url: 'http://example.com/',
+          body: '',
+          method: 'GET'
+        });
+        runtime.globals.request.headers.should.have.properties({
+          'content-type': 'application/x-www-form-urlencoded',
+          'set-cookie': [ 'username=foo; Path=/', 'remember=never; Path=/' ]
+        });
+        done();
+      })
+      .catch(function (err) {
+        done(err);
+      });
+    });
+
   });
 
 });

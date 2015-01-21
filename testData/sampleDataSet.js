@@ -315,6 +315,76 @@
       "index": 30,
       "enabled": true,
       "elementType": "ZestActionPrint"
+    },
+    {
+      "url": "http://example.com/",
+      "data": "",
+      "method": "GET",
+      "headers": "Content-Type: application/x-www-form-urlencoded\r\n",
+      "response": {
+        "url": "http://example.com/",
+        "headers": "",
+        "body": "",
+        "statusCode": 200,
+        "responseTimeInMs": 688,
+        "elementType": "ZestResponse"
+      },
+      "assertions": [
+        {
+          "rootExpression": {
+            "code": 200,
+            "not": false,
+            "elementType": "ZestExpressionStatusCode"
+          },
+          "elementType": "ZestAssertion"
+        },
+        {
+          "rootExpression": {
+            "length": 1270,
+            "approx": 1,
+            "variableName": "response.body",
+            "not": false,
+            "elementType": "ZestExpressionLength"
+          },
+          "elementType": "ZestAssertion"
+        },
+        {
+          "rootExpression": {
+            "regex": "coordination",
+            "variableName": "response.body",
+            "caseExact": false,
+            "not": false,
+            "elementType": "ZestExpressionRegex"
+          },
+          "elementType": "ZestAssertion"
+        }
+      ],
+      "followRedirects": false,
+      "cookies": [
+        {
+          "cookieDomain": "example.com",
+          "cookiePath": "/",
+          "isSecure": false,
+          "hasPathAttribute": false,
+          "hasDomainAttribute": false,
+          "cookieVersion": 0,
+          "name": "username",
+          "value": "foo"
+        },
+        {
+          "cookieDomain": "example.com",
+          "cookiePath": "/",
+          "isSecure": false,
+          "hasPathAttribute": false,
+          "hasDomainAttribute": false,
+          "cookieVersion": 0,
+          "name": "remember",
+          "value": "never"
+        }
+      ],
+      "index": 31,
+      "enabled": true,
+      "elementType": "ZestRequest"
     }
   ],
   "authentication": [],

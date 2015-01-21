@@ -2,11 +2,12 @@
 
 module.exports = Runtime;
 
-var _       = require('lodash'),
-    rand    = require('random-seed').create(),
-    utils   = require('./utils'),
-    Q       = require('q'),
-    request = require('request');
+var _             = require('lodash'),
+    rand          = require('random-seed').create(),
+    utils         = require('./utils'),
+    Q             = require('q'),
+    request       = require('request'),
+    simpleHeaders = require('simple-headers');
 
 
 function Runtime (opts) {
@@ -100,7 +101,10 @@ Runtime.prototype = {
         break;
 
       case 'ZestExpressionLength':
-        that.log(exp.variableName + '.length:', that.getValue(exp.variableName).length);
+        that.log('actual ' + exp.variableName + '.length:',
+                  that.getValue(exp.variableName).length);
+        that.log('expected ' + exp.variableName + '.length',
+                  exp.length);
         var approx = exp.length * exp.approx / 100;
         that.log('approx:', '+/- ' + approx);
         var upperLimit = exp.length + approx;
@@ -159,10 +163,8 @@ Runtime.prototype = {
         that.log('response.url:', that.getValue(exp.variableName));
         that.log('value:', exp.value);
         if (! exp.caseExact) {
-          that.log('lowering case', '');
           expected = expected.toLowerCase();
           real = real.toLowerCase();
-          console.log(real);
         }
         if (_.isEqual(expected, real)) {
           result = true;
@@ -218,18 +220,30 @@ Runtime.prototype = {
           that.globals.requestResult = true;
           var options = {
             url: stmt.url,
-            headers: stmt.headers || '',
+            headers: simpleHeaders.parse(stmt.headers) || '',
             body: stmt.data || '',
-            method: stmt.method
+            method: stmt.method,
+            followRedirect: stmt.followRedirects
           };
+          if (! _.isEmpty(stmt.cookies)) {
+            utils.appendCookies(stmt);
+            options.headers = simpleHeaders.parse(stmt.headers);
+          }
+
           that.log('request options:', options);
+          that.globals.request = options;
+
           startTime = new Date().getTime();
-          request(options, function (error, response, body) {
+          var r = request(options, function (error, response, body) {
             if (!error) {
               stopTime = new Date().getTime();
+              var opts = {
+                httpVersion: response.httpVersion,
+                statusCode: response.statusCode
+              };
               that.globals.response = {
                 url: response.request.uri.href,
-                headers: '',
+                headers: simpleHeaders.stringify(response.headers, opts) || '',
                 body: body,
                 statusCode: response.statusCode,
                 responseTimeInMs: (stopTime - startTime)
