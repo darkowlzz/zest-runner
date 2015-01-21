@@ -1,3 +1,5 @@
+var cookie = require('simple-cookie');
+
 function SyncLoop () {
 
 }
@@ -44,3 +46,11 @@ SyncLoop.prototype = {
     return loop;
   }
 };
+
+
+function appendCookies (stmt) {
+  stmt.cookies.forEach(function (aCookie) {
+    stmt.headers += 'Set-Cookie: ' + cookie.stringify(aCookie) + '\r\n';
+  });
+}
+exports.appendCookies = appendCookies;
