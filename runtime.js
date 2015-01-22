@@ -7,7 +7,8 @@ var _             = require('lodash'),
     utils         = require('./utils'),
     Q             = require('q'),
     request       = require('request'),
-    simpleHeaders = require('simple-headers');
+    simpleHeaders = require('simple-headers'),
+    LoopNext      = require('loopnext');
 
 
 function Runtime (opts) {
@@ -46,10 +47,10 @@ Runtime.prototype = {
   // Run a block of statements
   runBlock: function (block) {
     var that = this;
-    var syncLoop = new utils.SyncLoop();
+    var loop = new LoopNext();
     var countStmt = 0;
     return Q.Promise(function (resolve, reject) {
-      syncLoop.syncLoop(block.length, function (l) {
+      loop.syncLoop(block.length, function (l) {
         that.run.call(that, block[countStmt])
         .then(function () {
           countStmt++;
@@ -317,8 +318,8 @@ Runtime.prototype = {
           var tokens = stmt.set.tokens;
           var loopVar = stmt.variableName;
           var count = 0;
-          var syncLoop1 = new utils.SyncLoop();
-          syncLoop1.syncLoop(tokens.length, function(loop) {
+          var loop = new LoopNext();
+          loop.syncLoop(tokens.length, function(l) {
             that.globals[loopVar] = tokens[count];
             that.runBlock(stmt.statements)
             .then(function () {
@@ -326,7 +327,7 @@ Runtime.prototype = {
               if (count === stmt.set.tokens.length) {
                 resolve(true);
               }
-              loop.next();
+              l.next();
             });
           });
           break;

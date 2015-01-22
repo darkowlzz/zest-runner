@@ -10,6 +10,7 @@
   "license": "MPL",
   "dependencies": {
     "lodash": "^2.4.1",
+    "loopnext": "0.0.3",
     "q": "^1.1.2",
     "random-seed": "^0.2.0",
     "request": "^2.51.0",
