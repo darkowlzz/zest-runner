@@ -4,7 +4,7 @@ module.exports = ZestRunner;
 
 var ZestCreator = require('zest-creator'),
     Runtime     = require('./runtime'),
-    utils       = require('./utils'),
+    LoopNext    = require('loopnext'),
     Q           = require('q'),
     _           = require('lodash');
 
@@ -44,10 +44,10 @@ ZestRunner.prototype = {
   // run the script
   run: function () {
     var that = this;
-    var syncLoop1 = new utils.SyncLoop();
+    var loop = new LoopNext();
     that.count = 0;
     return Q.Promise(function (resolve, reject) {
-      syncLoop1.syncLoop(that.script.statements.length, function (loop) {
+      loop.syncLoop(that.script.statements.length, function (l) {
         that.runtime.run(that.script.statements[that.count])
         .then(function (r) {
           if (r[0] === 'fail') {
@@ -58,7 +58,7 @@ ZestRunner.prototype = {
             if (that.count === that.script.statements.length) {
               resolve(true);
             }
-            loop.next();
+            l.next();
           }
         });
       });
