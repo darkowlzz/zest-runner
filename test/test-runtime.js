@@ -11,7 +11,7 @@ describe('==== test zest runtime ====', function () {
                             debug: true});
   var runtime = new Runtime({debug: true});
 
-  describe('should run assign statements', function () {
+  describe('run assign statements', function () {
     it('assignString', function (done) {
       this.timeout(TIME);
       runtime.run(zc.getStatement(2))
@@ -70,7 +70,7 @@ describe('==== test zest runtime ====', function () {
     });
   });
 
-  describe('should run action statements', function () {
+  describe('run action statements', function () {
     it('actionPrint', function (done) {
       this.timeout(TIME);
       runtime.run(zc.getStatement(11))
@@ -109,7 +109,7 @@ describe('==== test zest runtime ====', function () {
     });
   });
 
-  describe('should run loops', function () {
+  describe('run loopsString', function () {
     it('should run loopString', function (done) {
       this.timeout(10000);
       runtime.run(zc.getStatement(8))
@@ -125,7 +125,9 @@ describe('==== test zest runtime ====', function () {
         done(err);
       });
     });
+  });
 
+  describe('run loopInteger', function () {
     it('should run loopInteger', function (done) {
       this.timeout(TIME);
       runtime.globals.m.should.be.exactly('8');
@@ -141,7 +143,7 @@ describe('==== test zest runtime ====', function () {
   });
 
 
-  describe('should run assignCalc', function () {
+  describe('run assignCalc', function () {
     it('should add', function (done) {
       this.timeout(TIME);
       runtime.run(zc.getStatement(16))
@@ -192,7 +194,7 @@ describe('==== test zest runtime ====', function () {
   });
 
 
-  describe('should run conditionals', function () {
+  describe('run conditionals', function () {
     it('should run conditional if block', function (done) {
       this.timeout(1000);
       runtime.run(zc.getStatement(21))
@@ -290,7 +292,24 @@ describe('==== test zest runtime ====', function () {
         done(err);
       });
     });
+  });
 
+  describe('run loopRegex', function () {
+    it('should run loopRegex', function (done) {
+      this.timeout(TIME);
+      runtime.run(zc.getStatement(32))
+      .then(function () {
+        runtime.globals.loopRegexVal.should.be.exactly('5');
+        return runtime.run(zc.getStatement(33));
+      })
+      .then(function () {
+        runtime.globals.loopRegexVal.should.be.exactly('9');
+        done();
+      })
+      .catch(function (err) {
+        done(err);
+      });
+    });
   });
 
 });

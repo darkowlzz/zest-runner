@@ -319,7 +319,7 @@ Runtime.prototype = {
           var loopVar = stmt.variableName;
           var count = 0;
           var loop = new LoopNext();
-          loop.syncLoop(tokens.length, function(l) {
+          loop.syncLoop(tokens.length, function (l) {
             that.globals[loopVar] = tokens[count];
             that.runBlock(stmt.statements)
             .then(function () {
@@ -347,6 +347,25 @@ Runtime.prototype = {
           break;
 
         case 'ZestLoopClientElements':
+          break;
+
+        case 'ZestLoopRegex':
+          var loopVar = stmt.variableName;
+          var re = new RegExp(stmt.set.regex, 'g');
+          var tokens = that.getValue(stmt.set.inputVariableName).match(re);
+          var count = 0;
+          var loop = new LoopNext();
+          loop.syncLoop(tokens.length, function (l) {
+            that.globals[loopVar] = tokens[count];
+            that.runBlock(stmt.statements)
+            .then(function () {
+              count++;
+              if (count === tokens.length) {
+                resolve(true);
+              }
+              l.next();
+            });
+          });
           break;
 
         case 'ZestActionPrint':

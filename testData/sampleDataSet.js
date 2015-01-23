@@ -385,6 +385,43 @@
       "index": 31,
       "enabled": true,
       "elementType": "ZestRequest"
+    },
+    {
+      "string": "5",
+      "variableName": "loopRegexVal",
+      "index": 32,
+      "enabled": true,
+      "elementType": "ZestAssignString"
+    },
+    {
+      "set": {
+        "inputVariableName": "response.body",
+        "regex": "html",
+        "groupIndex": 0,
+        "caseExact": false,
+        "elementType": "ZestLoopTokenRegexSet"
+      },
+      "statements": [
+        {
+          "message": "inside loop {{q}}",
+          "index": 34,
+          "enabled": true,
+          "elementType": "ZestActionPrint"
+        },
+        {
+          "variableName": "loopRegexVal",
+          "operandA": "loopRegexVal",
+          "operandB": 1,
+          "operation": "add",
+          "index": 35,
+          "enabled": true,
+          "elementType": "ZestAssignCalc"
+        }
+      ],
+      "variableName": "q",
+      "index": 33,
+      "enabled": true,
+      "elementType": "ZestLoopRegex"
     }
   ],
   "authentication": [],
