@@ -471,6 +471,24 @@
       "index": 39,
       "enabled": true,
       "elementType": "ZestAssignStringDelimiters"
+    },
+    {
+      "prefix": "HTTP",
+      "postfix": "OK",
+      "location": "HEAD",
+      "variableName": "ww",
+      "index": 40,
+      "enabled": true,
+      "elementType": "ZestAssignRegexDelimiters"
+    },
+    {
+      "prefix": "html",
+      "postfix": "en",
+      "location": "BODY",
+      "variableName": "qq",
+      "index": 41,
+      "enabled": true,
+      "elementType": "ZestAssignRegexDelimiters"
     }
   ],
   "authentication": [],

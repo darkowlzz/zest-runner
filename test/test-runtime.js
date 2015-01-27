@@ -354,4 +354,30 @@ describe('==== test zest runtime ====', function () {
       });
     });
   });
+
+  describe('run AssignRegexDelimiters', function () {
+    it('should run AssignRegexDelimiters on HEAD', function (done) {
+      this.timeout(TIME);
+      runtime.run(zc.getStatement(40))
+      .then(function () {
+        runtime.globals.ww.should.be.exactly('/1.1 200 ');
+        done();
+      })
+      .catch(function (err) {
+        done(err);
+      });
+    });
+
+    it('should run AssignRegexDelimiters on BODY', function (done) {
+      this.timeout(TIME);
+      runtime.run(zc.getStatement(41))
+      .then(function () {
+        runtime.globals.qq.should.be.exactly('>\n<html lang="');
+        done();
+      })
+      .catch(function (err) {
+        done(err);
+      });
+    });
+  });
 });
