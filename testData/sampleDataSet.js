@@ -453,6 +453,24 @@
       "index": 37,
       "enabled": true,
       "elementType": "ZestAssignFieldValue"
+    },
+    {
+      "prefix": "HTTP",
+      "postfix": "OK",
+      "location": "HEAD",
+      "variableName": "ww",
+      "index": 38,
+      "enabled": true,
+      "elementType": "ZestAssignStringDelimiters"
+    },
+    {
+      "prefix": "html",
+      "postfix": "en",
+      "location": "BODY",
+      "variableName": "qq",
+      "index": 39,
+      "enabled": true,
+      "elementType": "ZestAssignStringDelimiters"
     }
   ],
   "authentication": [],

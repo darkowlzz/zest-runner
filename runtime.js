@@ -329,6 +329,19 @@ Runtime.prototype = {
           break;
 
         case 'ZestAssignStringDelimiters':
+          var location, subject, start, end;
+          if (stmt.location === 'HEAD') {
+            location = 'response.headers';
+          } else if (stmt.location === 'BODY') {
+            location = 'response.body';
+          }
+          that.log('location:', location);
+          subject = that.getValue(location);
+          start = subject.indexOf(stmt.prefix) + stmt.prefix.length;
+          end = subject.indexOf(stmt.postfix);
+          that.globals[stmt.variableName] = subject.slice(start, end);
+          that.log('String:', that.globals[stmt.variableName]);
+          resolve(true);
           break;
 
         case 'ZestAssignRegexDelimiters':

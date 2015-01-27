@@ -328,4 +328,30 @@ describe('==== test zest runtime ====', function () {
       });
     });
   });
+
+  describe('run AssignStringDelimiters', function () {
+    it('should run AssignStringDelimiters on HEAD', function (done) {
+      this.timeout(TIME);
+      runtime.run(zc.getStatement(38))
+      .then(function () {
+        runtime.globals.ww.should.be.exactly('/1.1 200 ');
+        done();
+      })
+      .catch(function (err) {
+        done(err);
+      });
+    });
+
+    it('should run AssignStringDelimiters on BODY', function (done) {
+      this.timeout(TIME);
+      runtime.run(zc.getStatement(39))
+      .then(function () {
+        runtime.globals.qq.should.be.exactly('>\n<html lang="');
+        done();
+      })
+      .catch(function (err) {
+        done(err);
+      });
+    });
+  });
 });
