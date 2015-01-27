@@ -9,17 +9,18 @@
   "author": "Sunny <indiasuny000@gmail.com> (darkowlzz)",
   "license": "MPL",
   "dependencies": {
-    "lodash": "^2.4.1",
-    "loopnext": "0.0.3",
+    "form-input-list": "^0.0.3",
+    "lodash": "^3.0.0",
+    "loopnext": "^0.0.3",
     "q": "^1.1.2",
     "random-seed": "^0.2.0",
     "request": "^2.51.0",
-    "simple-cookie": "0.0.8",
-    "simple-headers": "0.0.1",
+    "simple-cookie": "^0.1.1",
+    "simple-headers": "^0.0.1",
     "zest-creator": "git://github.com/darkowlzz/zest-creator"
   },
   "devDependencies": {
     "mocha": "^2.1.0",
-    "should": "^4.4.2"
+    "should": "^4.6.1"
   }
 }

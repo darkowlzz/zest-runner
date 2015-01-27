@@ -8,7 +8,8 @@ var _             = require('lodash'),
     Q             = require('q'),
     request       = require('request'),
     simpleHeaders = require('simple-headers'),
-    LoopNext      = require('loopnext');
+    LoopNext      = require('loopnext'),
+    formInput     = require('form-input-list').formInput;
 
 
 function Runtime (opts) {
@@ -42,6 +43,20 @@ Runtime.prototype = {
       }
     );
     return message;
+  },
+
+  getDefinition: function (stmt) {
+    var that = this,
+        globals = that.globals;
+
+    return Q.Promise(function (resolve, reject) {
+      formInput(globals.response.body)
+      
+      .then(function (forms) {
+        var value = forms[stmt.formIndex]['values'][stmt.fieldName];
+        resolve(value);
+      });
+    });
   },
 
   // Run a block of statements
@@ -292,7 +307,12 @@ Runtime.prototype = {
           resolve(true);
           break;
 
-        case 'ZestAssignFieldDefinition':
+        case 'ZestAssignFieldValue':
+          that.getDefinition(stmt.fieldDefinition)
+          .then(function (value) {
+            that.globals[stmt.variableName] = value;
+            resolve(true);
+          });
           break;
 
         case 'ZestAssignReplace':
