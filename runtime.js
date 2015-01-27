@@ -345,6 +345,22 @@ Runtime.prototype = {
           break;
 
         case 'ZestAssignRegexDelimiters':
+          var location, subject, start, end;
+          if (stmt.location === 'HEAD') {
+            location = 'response.headers';
+          } else if (stmt.location === 'BODY') {
+            location = 'response.body';
+          }
+          that.log('location:', location);
+          subject = that.getValue(location);
+          var startRegex = new RegExp(stmt.prefix);
+          var endRegex = new RegExp(stmt.postfix);
+          var word = subject.match(startRegex)[0];
+          start = subject.search(startRegex) + word.length;
+          end = subject.search(endRegex);
+          that.globals[stmt.variableName] = subject.slice(start, end);
+          that.log('String:', that.globals[stmt.variableName]);
+          resolve(true);
           break;
 
         case 'ZestLoopString':
