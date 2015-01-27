@@ -312,4 +312,20 @@ describe('==== test zest runtime ====', function () {
     });
   });
 
+  describe('run AssignFieldValue', function () {
+    it('should run AssignFieldValue', function (done) {
+      this.timeout(TIME);
+      runtime.run(zc.getStatement(36))
+      .then(function () {
+        return runtime.run(zc.getStatement(37));
+      })
+      .then(function () {
+        runtime.globals.sss.should.be.exactly('mail');
+        done();
+      })
+      .catch(function (err) {
+        done(err);
+      });
+    });
+  });
 });

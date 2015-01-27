@@ -422,6 +422,37 @@
       "index": 33,
       "enabled": true,
       "elementType": "ZestLoopRegex"
+    },
+    {
+      "url": "https://accounts.google.com/ServiceLogin?service=mail&passive=true&rm=false&continue=https://mail.google.com/mail/&ss=1&scc=1&ltmpl=default&ltmplcache=2&emr=1",
+      "data": "",
+      "method": "GET",
+      "headers": "",
+      "response": {
+        "url": "",
+        "headers": "",
+        "body": "",
+        "statusCode": 200,
+        "responseTimeInMs": 688,
+        "elementType": "ZestResponse"
+      },
+      "assertions": [],
+      "followRedirects": false,
+      "cookies": [],
+      "index": 36,
+      "enabled": true,
+      "elementType": "ZestRequest"
+    },
+    {
+      "fieldDefinition": {
+        "formIndex": 0,
+        "fieldName": "service",
+        "elementType": "ZestFieldDefinition"
+      },
+      "variableName": "sss",
+      "index": 37,
+      "enabled": true,
+      "elementType": "ZestAssignFieldValue"
     }
   ],
   "authentication": [],
