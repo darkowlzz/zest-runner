@@ -1,8 +1,12 @@
 {
   "name": "zest-runner",
-  "version": "0.0.0",
-  "description": "",
+  "version": "0.0.1",
+  "description": "A runtime for Zest scripts.",
   "main": "zestRunner.js",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/darkowlzz/zest-runner.git"
+  },
   "scripts": {
     "test": "mocha"
   },
@@ -17,7 +21,7 @@
     "request": "^2.51.0",
     "simple-cookie": "^0.1.1",
     "simple-headers": "^0.0.1",
-    "zest-creator": "git://github.com/darkowlzz/zest-creator"
+    "zest-creator": "0.0.1"
   },
   "devDependencies": {
     "mocha": "^2.1.0",
