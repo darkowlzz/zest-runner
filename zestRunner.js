@@ -56,6 +56,7 @@ ZestRunner.prototype = {
           } else {
             that.count++;
             if (that.count === that.script.statements.length) {
+              that.reset();
               resolve(true);
             }
             l.next();
@@ -63,6 +64,30 @@ ZestRunner.prototype = {
         });
       });
     });
+  },
+
+  runNext: function () {
+    var that = this;
+    if (that.count >= that.script.statements.length) {
+      console.log('Nothing to run');
+    } else {
+      return Q.Promise(function (resolve, reject) {
+        that.runtime.run(that.script.statements[that.count])
+        .then(function (r) {
+          if(r[0] === 'fail') {
+            that.log('STOP', r);
+            resolve(true);
+          }
+          that.log('one statement executed', '');
+          that.count++;
+          resolve(true);
+        });
+      });
+    }
+  },
+
+  reset: function () {
+    this.count = 0;
   },
 
   // Print debug statements
