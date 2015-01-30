@@ -5,8 +5,10 @@ var ZestRunner = require('../'),
     objData    = require('../testData/sampleObjDataSet').sampleZest;
 
 
-var fileWithFail = 'testData/dataSetFail.js';
-var fileFull = 'testData/sampleDataSet.js';
+var fileWithFail = 'testData/dataSetFail.js',
+    fileFull = 'testData/sampleDataSet.js',
+    fileShort = 'testData/shortSet.js';
+var TIME = 20000;
 
 describe('==== test zest runner ====', function () {
   var opts = {
@@ -15,8 +17,9 @@ describe('==== test zest runner ====', function () {
     ,debug: true
   };
   var zestRunner = new ZestRunner(opts);
+
   it('script should fail after 4 statements', function (done) {
-    this.timeout(2000);
+    this.timeout(TIME);
     zestRunner.run()
     .then(function () {
       zestRunner.count.should.be.exactly(3);
@@ -28,7 +31,7 @@ describe('==== test zest runner ====', function () {
   });
 
   it('should run the whole script', function (done) {
-    this.timeout(12000);
+    this.timeout(TIME);
     opts.file = fileFull;
     zestRunner = new ZestRunner(opts);
 
@@ -49,7 +52,7 @@ describe('==== test zest runner ====', function () {
   });
 
   it('should run script from obj', function (done) {
-    this.timeout(12000);
+    this.timeout(TIME);
     var opts2 = {
       sourceType: 'object',
       zest: objData
@@ -70,5 +73,33 @@ describe('==== test zest runner ====', function () {
     .catch(function (err) {
       done(err);
     });
-  })
+  });
+
+  it('should run one at a time', function (done) {
+    this.timeout(TIME);
+    opts.file = fileShort;
+    zestRunner = new ZestRunner(opts);
+    zestRunner.runNext()
+    .then(function () {
+      return zestRunner.runNext();
+    })
+    .then(function () {
+      console.log(zestRunner.runtime.globals);
+      zestRunner.runtime.globals.var1.should.be.exactly('apple');
+      return zestRunner.runNext();
+    })
+    .then(function () {
+      zestRunner.count.should.be.exactly(3);
+      return zestRunner.runNext();
+    })
+    .then(function () {
+      zestRunner.count.should.be.exactly(3);
+      zestRunner.reset();
+      zestRunner.count.should.be.exactly(0);
+      done();
+    })
+    .catch(function (err) {
+      done(err);
+    });
+  });
 });
