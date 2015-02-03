@@ -8,12 +8,12 @@
     "url": "git://github.com/darkowlzz/zest-runner.git"
   },
   "scripts": {
-    "test": "mocha"
+    "test": "mocha; rsync -av --progress ./ jpmTest/zest/ --exclude jpmTest/; cd jpmTest/; jpm test; rm -rf zest;"
   },
   "author": "Sunny <indiasuny000@gmail.com> (darkowlzz)",
   "license": "MPL",
   "dependencies": {
-    "form-input-list": "^0.0.3",
+    "form-input-list": "git://github.com/darkowlzz/form-input-list.git",
     "lodash": "^3.0.0",
     "loopnext": "^0.0.3",
     "q": "^1.1.2",
@@ -21,9 +21,10 @@
     "request": "^2.51.0",
     "simple-cookie": "^0.1.1",
     "simple-headers": "^0.0.1",
-    "zest-creator": "0.0.1"
+    "zest-creator": "git://github.com/darkowlzz/zest-creator.git"
   },
   "devDependencies": {
+    "jpm": "0.0.23",
     "mocha": "^2.1.0",
     "should": "^4.6.1"
   }
