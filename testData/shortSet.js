@@ -31,6 +31,53 @@
       "index": 3,
       "enabled": true,
       "elementType": "ZestActionFail"
+    },
+    {
+      "string": "4",
+      "variableName": "varX",
+      "index": 4,
+      "enabled": true,
+      "elementType": "ZestAssignString"
+    },
+    {
+      "rootExpression": {
+        "value": "4",
+        "variableName": "varX",
+        "caseExact": false,
+        "not": false,
+        "elementType": "ZestExpressionEquals"
+      },
+      "ifStatements": [
+        {
+          "variableName": "varX",
+          "operandA": "varX",
+          "operandB": 1,
+          "operation": "add",
+          "index": 6,
+          "enabled": true,
+          "elementType": "ZestAssignCalc"
+        },
+        {
+          "message": "hi there",
+          "index": 7,
+          "enabled": true,
+          "elementType": "ZestActionPrint"
+        }
+      ],
+      "elseStatements": [
+        {
+          "variableName": "varX",
+          "operandA": "varX",
+          "operandB": 1,
+          "operation": "subtract",
+          "index": 8,
+          "enabled": true,
+          "elementType": "ZestAssignCalc"
+        }
+      ],
+      "index": 5,
+      "enabled": true,
+      "elementType": "ZestConditional"
     }
   ],
   "authentication": [],

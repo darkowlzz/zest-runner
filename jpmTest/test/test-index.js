@@ -137,8 +137,8 @@ exports["test A9 - request"] = function (assert, done) {
 
 exports["test B1 - print substitution"] = function (assert, done) {
   runtime.run(zc.getStatement(30))
-  .then(function (message) {
-    assert.ok(message === 'url was http://example.com/');
+  .then(function (r) {
+    assert.ok(r.print === 'url was http://example.com/');
     done();
   })
   .catch(function (err) {

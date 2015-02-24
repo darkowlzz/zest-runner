@@ -21,7 +21,7 @@ describe('==== test zest runner ====', function () {
   it('script should fail after 4 statements', function (done) {
     this.timeout(TIME);
     zestRunner.run()
-    .then(function () {
+    .then(function (r) {
       zestRunner.count.should.be.exactly(3);
       done();
     })
@@ -31,12 +31,12 @@ describe('==== test zest runner ====', function () {
   });
 
   it('should run the whole script', function (done) {
-    this.timeout(TIME);
+    this.timeout(90000);
     opts.file = fileFull;
     zestRunner = new ZestRunner(opts);
 
     zestRunner.run()
-    .then(function () {
+    .then(function (r) {
       zestRunner.runtime.globals.should.have.properties({
         var1: 'aggle',
         var2: 'berry',
@@ -60,7 +60,7 @@ describe('==== test zest runner ====', function () {
     };
     var zr = new ZestRunner(opts2);
     zr.run()
-    .then(function () {
+    .then(function (r) {
       zr.runtime.globals.should.have.properties({
         var1: 'aggle',
         var2: 'berry',
@@ -80,20 +80,27 @@ describe('==== test zest runner ====', function () {
     opts.file = fileShort;
     zestRunner = new ZestRunner(opts);
     zestRunner.runNext()
-    .then(function () {
+    .then(function (r) {
       return zestRunner.runNext();
     })
-    .then(function () {
-      console.log(zestRunner.runtime.globals);
+    .then(function (r) {
       zestRunner.runtime.globals.var1.should.be.exactly('apple');
       return zestRunner.runNext();
     })
-    .then(function () {
+    .then(function (r) {
       zestRunner.count.should.be.exactly(3);
       return zestRunner.runNext();
     })
-    .then(function () {
-      zestRunner.count.should.be.exactly(3);
+
+    .then(function (r) {
+      return zestRunner.runNext();
+    })
+    .then(function (r) {
+      return zestRunner.runNext();
+    })
+
+    .then(function (r) {
+      zestRunner.count.should.be.exactly(5);
       zestRunner.reset();
       zestRunner.count.should.be.exactly(0);
       done();
