@@ -58,6 +58,12 @@ function ZestRunner (opts) {
 
 ZestRunner.prototype = {
 
+  _addToResults: function (results, r) {
+    if (! _.isEmpty(r)) {
+      results.push(r);
+    }
+  },
+
   // Run the whole script at once.
   run: function () {
     var that = this;
@@ -74,27 +80,27 @@ ZestRunner.prototype = {
           r.forEach(function (aRslt) {
             if (_.isArray(aRslt)) {
               aRslt.forEach(function (rslt) {
-                results.push(rslt);
+                that._addToResults(results, rslt);
                 if (rslt.type === 'ZestActionFail') {
                   runStatus = false;
                   deferred.resolve(results);
                 }
               })
             } else if (aRslt.type === 'ZestActionFail') {
-              results.push(aRslt);
+              that._addToResults(results, aRslt);
               runStatus = false;
               deferred.resolve(results);
             } else {
-              results.push(aRslt);
+              that._addToResults(results, aRslt);
             }
           });
         } else if (r.type === 'ZestActionFail') {
-          results.push(r);
+          that._addToResults(results, r);
           that.log('STOP', r);
           runStatus = false;
           deferred.resolve(results);
         } else {
-          results.push(r);
+          that._addToResults(results, r);
         }
 
         if (runStatus) {
