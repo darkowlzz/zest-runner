@@ -68,22 +68,33 @@ ZestRunner.prototype = {
     var deferred = defer();
     var runStatus = true;
     loop.syncLoop(that.script.statements.length, function (l) {
-      console.log('stmt index:', that.count);
       that.runtime.run(that.script.statements[that.count])
       .then(function (r) {
-        console.log(r);
-        results.push(r);
         if (_.isArray(r)) {
           r.forEach(function (aRslt) {
-            if (aRslt.type === 'ZestActionFail') {
+            if (_.isArray(aRslt)) {
+              aRslt.forEach(function (rslt) {
+                results.push(rslt);
+                if (rslt.type === 'ZestActionFail') {
+                  runStatus = false;
+                  deferred.resolve(results);
+                }
+              })
+            } else if (aRslt.type === 'ZestActionFail') {
+              results.push(aRslt);
               runStatus = false;
               deferred.resolve(results);
+            } else {
+              results.push(aRslt);
             }
           });
         } else if (r.type === 'ZestActionFail') {
+          results.push(r);
           that.log('STOP', r);
           runStatus = false;
           deferred.resolve(results);
+        } else {
+          results.push(r);
         }
 
         if (runStatus) {
