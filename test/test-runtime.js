@@ -74,8 +74,8 @@ describe('==== test zest runtime ====', function () {
     it('actionPrint', function (done) {
       this.timeout(TIME);
       runtime.run(zc.getStatement(11))
-      .then(function (message) {
-        message.should.be.exactly('yo');
+      .then(function (r) {
+        r.print.should.be.exactly('yo');
         done();
       })
       .catch(function (err) {
@@ -88,8 +88,9 @@ describe('==== test zest runtime ====', function () {
       this.timeout(TIME);
       runtime.run(zc.getStatement(26))
       .then(function (r) {
-        r[0].should.be.exactly('fail');
-        r[1].should.be.exactly('boom! berry');
+        console.log(r);
+        r.print.should.be.exactly('boom! berry');
+        r.priority.should.be.exactly('HIGH');
         done();
       })
       .catch(function (err) {
@@ -118,6 +119,10 @@ describe('==== test zest runtime ====', function () {
         return runtime.run(zc.getStatement(9));
       })
       .then(function (r) {
+        r.forEach(function (ele) {
+          ele[0].print.should.be.a.String;
+          ele[1].print.should.be.exactly('yo');
+        });
         runtime.globals.m.should.be.exactly('8');
         done();
       })
@@ -227,8 +232,11 @@ describe('==== test zest runtime ====', function () {
     it('should pass for correct statusCode', function (done) {
       this.timeout(15000);
       runtime.run(zc.getStatement(27))
-      .then(function () {
-        runtime.globals.requestResult.should.be.true;
+      .then(function (r) {
+        r.result.should.be.true;
+        r.method.should.be.exactly('GET');
+        r.url.should.be.exactly('http://example.com/');
+        r.code.should.be.exactly(200);
         done();
       })
       .catch(function (err) {
@@ -239,8 +247,13 @@ describe('==== test zest runtime ====', function () {
     it('should fail for incorrect statusCode', function (done) {
       this.timeout(15000);
       runtime.run(zc.getStatement(28))
-      .then(function () {
-        runtime.globals.requestResult.should.be.false;
+      .then(function (r) {
+        console.log(r);
+        r.result.should.be.false;
+        r.message.should.be.exactly('FAILED Assert - Status Code: expected 201 got 200');
+        r.method.should.be.exactly('GET');
+        r.url.should.be.exactly('http://example.com/');
+        r.code.should.be.exactly(200);
         done();
       })
       .catch(function (err) {
@@ -251,8 +264,12 @@ describe('==== test zest runtime ====', function () {
     it('should pass with method testing', function (done) {
       this.timeout(15000);
       runtime.run(zc.getStatement(29))
-      .then(function () {
-        runtime.globals.requestResult.should.be.true;
+      .then(function (r) {
+        console.log(r);
+        r.result.should.be.true;
+        r.method.should.be.exactly('GET');
+        r.url.should.be.exactly('http://example.com/');
+        r.code.should.be.exactly(200);
         done();
       })
       .catch(function (err) {
@@ -263,8 +280,8 @@ describe('==== test zest runtime ====', function () {
     it('should print result from previous request', function (done) {
       this.timeout(TIME);
       runtime.run(zc.getStatement(30))
-      .then(function (message) {
-        message.should.be.exactly('url was http://example.com/');
+      .then(function (r) {
+        r.print.should.be.exactly('url was http://example.com/');
         done();
       })
       .catch(function (err) {
@@ -275,8 +292,12 @@ describe('==== test zest runtime ====', function () {
     it('should pass with body testing and extra cookies', function (done) {
       this.timeout(15000);
       runtime.run(zc.getStatement(31))
-      .then(function () {
-        runtime.globals.requestResult.should.be.true;
+      .then(function (r) {
+        console.log(r);
+        r.result.should.be.true;
+        r.method.should.be.exactly('GET');
+        r.url.should.be.exactly('http://example.com/');
+        r.code.should.be.exactly(200);
         runtime.globals.request.should.have.properties({
           url: 'http://example.com/',
           body: '',

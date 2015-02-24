@@ -64,18 +64,33 @@ ZestRunner.prototype = {
     var loop = new LoopNext();
     // Reset run counter.
     that.reset();
+    var results = [];
     var deferred = defer();
+    var runStatus = true;
     loop.syncLoop(that.script.statements.length, function (l) {
+      console.log('stmt index:', that.count);
       that.runtime.run(that.script.statements[that.count])
       .then(function (r) {
-        if (r[0] == 'fail') {
+        console.log(r);
+        results.push(r);
+        if (_.isArray(r)) {
+          r.forEach(function (aRslt) {
+            if (aRslt.type === 'ZestActionFail') {
+              runStatus = false;
+              deferred.resolve(results);
+            }
+          });
+        } else if (r.type === 'ZestActionFail') {
           that.log('STOP', r);
-          deferred.resolve(true);
-        } else {
+          runStatus = false;
+          deferred.resolve(results);
+        }
+
+        if (runStatus) {
           that.count++;
           if (that.count === that.script.statements.length) {
             that.reset();
-            deferred.resolve(true);
+            deferred.resolve(results);
           }
           l.next();
         }
@@ -86,23 +101,24 @@ ZestRunner.prototype = {
 
   // Run the script one statement at a time.
   runNext: function () {
+    var deferred = defer();
     var that = this;
     if (that.count >= that.script.statements.length) {
       console.log('Nothing to run');
+      deferred.resolve('STOP');
     } else {
-      var deferred = defer();
       that.runtime.run(that.script.statements[that.count])
       .then(function (r) {
         if (r[0] === 'fail') {
           that.log('STOP', r);
-          deferred.resolve(true);
+          deferred.resolve(r);
         }
         that.log('one statement executed', '');
         that.count++;
-        deferred.resolve(true);
+        deferred.resolve(r);
       });
-      return deferred.promise;
     }
+    return deferred.promise;
   },
 
   // Reset the statement run counter.

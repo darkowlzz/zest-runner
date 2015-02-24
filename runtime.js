@@ -104,13 +104,15 @@ Runtime.prototype = {
     var that = this;
     var loop = new LoopNext();
     var countStmt = 0;
+    var blockResult = [];
     var deferred = defer();
     loop.syncLoop(block.length, function (l) {
       that.run.call(that, block[countStmt])
-      .then(function () {
+      .then(function (r) {
+        blockResult.push(r);
         countStmt++;
         if (countStmt === block.length) {
-          deferred.resolve(true);
+          deferred.resolve(blockResult);
         }
         l.next();
       });
@@ -147,6 +149,31 @@ Runtime.prototype = {
     return re.test(subject);
   },
 
+  failMsgGenerator: function (expression, rawData) {
+    var finalMsg = 'FAILED Assert - ';
+    switch(expression) {
+      case 'ZestExpressionStatusCode':
+        finalMsg += 'Status Code: expected ' + rawData.expected + ' got ' +
+                    rawData.actual;
+        break;
+
+      case 'ZestExpressionLength':
+        finalMsg += rawData.variableName + ' length: expected ' + rawData.expected +
+                    ' got ' + rawData.actual;
+        break;
+
+      case 'ZestExpressionRegex':
+        finalMsg += rawData.variableName + ' doesnt include regex: ' + rawData.regex;
+        break;
+
+      case 'ZestExpressionIsInteger':
+
+        break;
+    }
+
+    return finalMsg;
+  },
+
   /**
    * Evaluate zest expressions.
    * @param {Object} exp - A zest expression object.
@@ -157,16 +184,25 @@ Runtime.prototype = {
     var result;
     switch(exp.elementType) {
       case 'ZestExpressionStatusCode':
+        var expected = exp.code,
+            actual = that.globals.response.statusCode;
         that.log('expected statusCode: ', exp.code);
         that.log('actual statusCode: ', that.globals.response.statusCode);
-        if (_.isEqual(exp.code, that.globals.response.statusCode)) {
-          result = true;
+        if (_.isEqual(expected, actual)) {
+          result = { result: true };
         } else {
-          result = false;
+          result = { result: false,
+                     message: that.failMsgGenerator(exp.elementType, {
+                       expected: expected,
+                       actual: actual
+                     })
+                   }
         }
         break;
 
       case 'ZestExpressionLength':
+        var expected = exp.length,
+            actual = that._getValue(exp.variableName).length;
         that.log('actual ' + exp.variableName + '.length:',
                   that._getValue(exp.variableName).length);
         that.log('expected ' + exp.variableName + '.length',
@@ -177,11 +213,16 @@ Runtime.prototype = {
         that.log('upperLimit:', upperLimit);
         var lowerLimit = exp.length - approx;
         that.log('lowerLimit:', lowerLimit);
-        if ((that._getValue(exp.variableName).length >= lowerLimit) &&
-            (that._getValue(exp.variableName).length <= upperLimit)) {
-          result = true;
+        if ((actual >= lowerLimit) && (actual <= upperLimit)) {
+          result = { result: true };
         } else {
-          result = false;
+          result = { result: false,
+                     message: that.failMsgGenerator(exp.elementType, {
+                                variableName: exp.variableName,
+                                expected: expected,
+                                actual: actual
+                     })
+                   };
         }
         break;
 
@@ -194,21 +235,26 @@ Runtime.prototype = {
         }
         var re = new RegExp(exp.regex, flags);
         if (that._getValue(exp.variableName).search(re) > -1) {
-          result = true;
+          result = { result: true };
         } else {
-          result = false;
+          result = { result: false,
+                     message: that.failMsgGenerator(exp.elementType, {
+                       variableName: exp.variableName,
+                       regex: exp.regex
+                     })
+                   };
         }
         break;
 
       case 'ZestExpressionURL':
-        result = false;
+        result = { result: false };
         that.log('url:', that.globals.response.url);
         that.log('includeRegexes:', exp.includeRegexes);
         that.log('excludeRegexes:', exp.excludeRegexes);
         if (! _.isEmpty(exp.includeRegexes)) {
           exp.includeRegexes.some(function (pattern) {
             if (that.isPatternFound(pattern, that.globals.response.url)) {
-              result = true;
+              result = { result: true };
               return true;
             }
           });
@@ -216,7 +262,7 @@ Runtime.prototype = {
         if (! _.isEmpty(exp.excludeRegexes)) {
           exp.excludeRegexes.some(function (pattern) {
             if (that.isPatternFound(pattern, that.globals.response.url)) {
-              result = false;
+              result = { result: false };
               return true;
             }
           });
@@ -233,9 +279,9 @@ Runtime.prototype = {
           real = real.toLowerCase();
         }
         if (_.isEqual(expected, real)) {
-          result = true;
+          result = { result: true };
         } else {
-          result = false;
+          result = { result: false };
         }
         break;
 
@@ -245,18 +291,18 @@ Runtime.prototype = {
         that.log('real TimeInMs:', real);
         that.log('expected TimeInMs:', expected);
         if (exp.greaterThan) {
-          result = (real > expected);
+          result = { result: (real > expected) };
         } else {
-          result = (_.isEqual(real, expected));
+          result = { result: (_.isEqual(real, expected)) };
         }
         break;
 
       case 'ZestExpressionIsInteger':
         var num = parseInt(that._getValue(exp.variableName));
         if (isNaN(num)) {
-          result = false;
+          result = { result: false };
         } else {
-          result = true;
+          result = { result: true };
         }
         break;
 
@@ -265,7 +311,8 @@ Runtime.prototype = {
     }
 
     if (exp.not) {
-      return ! result;
+      result.result = ! result.result;
+      return result;
     } else {
       return result;
     }
@@ -283,12 +330,13 @@ Runtime.prototype = {
 
     switch (stmt.elementType) {
       case 'ZestComment':
-        deferred.resolve(true);
+        deferred.resolve({});
         break;
 
       case 'ZestRequest':
         var startTime, stopTime;
         that.globals.requestResult = true;
+        that.globals.resultMessage = '';
 
         if (_.isEqual(that.config.platform, NODE)) {
           /** node.js request **/
@@ -324,15 +372,26 @@ Runtime.prototype = {
               }
               that.log('response: ', that.globals.response);
               if (! _.isEmpty(stmt.assertions)) {
+                var evalResult;
                 stmt.assertions.some(function (exp) {
                   that.log('assertion expression:', exp.rootExpression.elementType);
-                  if (! that.evalExpression(exp.rootExpression)) {
+                  evalResult = that.evalExpression(exp.rootExpression);
+                  if (! evalResult.result) {
                     that.globals.requestResult = false;
+                    that.globals.resultMessage = evalResult.message;
                     return true;
                   }
                 });
               }
-              deferred.resolve(true);
+              deferred.resolve({
+                result: that.globals.requestResult,
+                message: that.globals.resultMessage || '',
+                method: that.globals.request.method,
+                url: that.globals.request.url,
+                code: that.globals.response.statusCode,
+                rtt: that.globals.response.responseTimeInMs + ' ms',
+                type: stmt.elementType
+              });
             } else {
               deferred.resolve('error in request');
             }
@@ -360,14 +419,25 @@ Runtime.prototype = {
               }
               that.log('response: ', that.globals.response);
               if (! _.isEmpty(stmt.assertions)) {
+                var evalResult;
                 stmt.assertions.some(function (exp) {
-                  if (! that.evalExpression(exp.rootExpression)) {
+                  evalResult = that.evalExpression(exp.rootExpression);
+                  if (! evalResult.result) {
                     that.globals.requestResult = false;
+                    that.globals.resultMessage = evalResult.message;
                     return true;
                   }
                 });
               }
-              deferred.resolve(true);
+              deferred.resolve({
+                result: that.globals.requestResult,
+                message: that.globals.resultMessage,
+                method: that.globals.request.method,
+                url: that.globals.request.url,
+                code: that.globals.response.statusCode,
+                rtt: that.globals.response.responseTimeInMs + ' ms',
+                type: stmt.elementType
+              });
             }
           }
 
@@ -389,36 +459,37 @@ Runtime.prototype = {
         break;
 
       case 'ZestConditional':
-        if (_.isEqual(that._getValue(stmt.rootExpression.variableName),
-                      stmt.rootExpression.value)) {
+        //if (_.isEqual(that._getValue(stmt.rootExpression.variableName),
+        //              stmt.rootExpression.value)) {
+        if (that.evalExpression(stmt.rootExpression).result) {
           that._runBlock(stmt.ifStatements)
-          .then(function () {
-            deferred.resolve(true);
+          .then(function (r) {
+            deferred.resolve(r);
           });
         } else {
           that._runBlock(stmt.elseStatements)
-          .then(function () {
-            deferred.resolve(true);
+          .then(function (r) {
+            deferred.resolve(r);
           });
         }
         break;
 
       case 'ZestAssignString':
         that.globals[stmt.variableName] = stmt.string;
-        deferred.resolve(true);
+        deferred.resolve({});
         break;
 
       case 'ZestAssignRandomInteger':
         that.globals[stmt.variableName] = 
           (rand.intBetween(stmt.minInt, stmt.maxInt)).toString();
-        deferred.resolve(true);
+        deferred.resolve({});
         break;
 
       case 'ZestAssignFieldValue':
         that._getDefinition(stmt.fieldDefinition)
         .then(function (value) {
           that.globals[stmt.variableName] = value;
-          deferred.resolve(true);
+          deferred.resolve({});
         });
         break;
 
@@ -432,7 +503,7 @@ Runtime.prototype = {
         that.globals[stmt.variableName] = that._getValue(stmt.variableName).replace(
                                        re, stmt.replacement
                                      );
-        deferred.resolve(true);
+        deferred.resolve({});
         break;
 
       case 'ZestAssignStringDelimiters':
@@ -448,7 +519,7 @@ Runtime.prototype = {
         end = subject.indexOf(stmt.postfix);
         that.globals[stmt.variableName] = subject.slice(start, end);
         that.log('String:', that.globals[stmt.variableName]);
-        deferred.resolve(true);
+        deferred.resolve({});
         break;
 
       case 'ZestAssignRegexDelimiters':
@@ -467,21 +538,23 @@ Runtime.prototype = {
         end = subject.search(endRegex);
         that.globals[stmt.variableName] = subject.slice(start, end);
         that.log('String:', that.globals[stmt.variableName]);
-        deferred.resolve(true);
+        deferred.resolve({});
         break;
 
       case 'ZestLoopString':
         var tokens = stmt.set.tokens;
         var loopVar = stmt.variableName;
         var count = 0;
+        var loopResult = [];
         var loop = new LoopNext();
         loop.syncLoop(tokens.length, function (l) {
           that.globals[loopVar] = tokens[count];
           that._runBlock(stmt.statements)
-          .then(function () {
+          .then(function (r) {
+            loopResult.push(r);
             count++;
             if (count === stmt.set.tokens.length) {
-              deferred.resolve(true);
+              deferred.resolve(loopResult);
             }
             l.next();
           });
@@ -499,7 +572,7 @@ Runtime.prototype = {
             that.run(stmt.statements[j]);
           }
         }
-        deferred.resolve(true);
+        deferred.resolve({});
         break;
 
       case 'ZestLoopClientElements':
@@ -510,14 +583,16 @@ Runtime.prototype = {
         var re = new RegExp(stmt.set.regex, 'g');
         var tokens = that._getValue(stmt.set.inputVariableName).match(re);
         var count = 0;
+        var loopResult = [];
         var loop = new LoopNext();
         loop.syncLoop(tokens.length, function (l) {
           that.globals[loopVar] = tokens[count];
           that._runBlock(stmt.statements)
-          .then(function () {
+          .then(function (r) {
+            loopResult.push(r);
             count++;
             if (count === tokens.length) {
-              deferred.resolve(true);
+              deferred.resolve(loopResult);
             }
             l.next();
           });
@@ -527,17 +602,18 @@ Runtime.prototype = {
       case 'ZestActionPrint':
         var message = that._findAndReplace(stmt.message);
         that.log('print:', message);
-        deferred.resolve(message);
+        deferred.resolve({ print: message,
+                           type: stmt.elementType });
         break;
 
       case 'ZestActionSleep':
         if (_.isEqual(that.config.platform, NODE)) {
           setTimeout(function () {
-            deferred.resolve(true);
+            deferred.resolve({});
           }, stmt.milliseconds);
         } else if (_.isEqual(that.config.platform, FX)) {
           _setTimeout(function () {
-            deferred.resolve(true);
+            deferred.resolve({});
           }, stmt.milliseconds);
         }
         break;
@@ -545,7 +621,10 @@ Runtime.prototype = {
       case 'ZestActionFail':
         var message = that._findAndReplace(stmt.message)
         that.log('Failed:', message);
-        deferred.resolve(['fail', message]);
+        deferred.resolve({ result: false,
+                           print: message,
+                           priority: stmt.priority,
+                           type: stmt.elementType });
         break;
 
       case 'ZestAssignCalc':
@@ -582,7 +661,7 @@ Runtime.prototype = {
           default:
             console.log('unknown operation');
         }
-        deferred.resolve(true);
+        deferred.resolve({});
         break;
 
       default:
