@@ -35,16 +35,17 @@ var opts = {
   file: 'abc.zst'
 };
 var zr = new ZestRunner(opts);
-zr.run(); // Run the script, returns a promise
+zr.run().then(resultHandler); // Run the script, returns a promise
 ```
 `run()` returns a javascript promise object, which could be used with `.then`.
 
 ```js
 zr.run()
-.then(function () {
-  console.log('Script execution completed!');
+.then(function (r) {
+  // parse the result and use
 });
 ```
+Example of a run [result](https://pastebin.mozilla.org/8823055).
 
 Run zest script from a json object.
 
@@ -54,7 +55,7 @@ var opts = {
   zest: objData
 };
 var zr = new ZestRunner(opts);
-zr.run();
+zr.run().then(resultHandler);
 ```
 
 ## LICENSE
