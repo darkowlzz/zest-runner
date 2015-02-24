@@ -45,7 +45,7 @@ zr.run()
   // parse the result and use
 });
 ```
-Example of a run [result](https://pastebin.mozilla.org/8823055).
+Example of a run [result](https://pastebin.mozilla.org/8823086).
 
 Run zest script from a json object.
 
