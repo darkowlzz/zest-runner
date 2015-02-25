@@ -2,6 +2,8 @@
 
 [![Build Status](https://travis-ci.org/darkowlzz/zest-runner.svg?branch=master)](https://travis-ci.org/darkowlzz/zest-runner)
 
+[![NPM](https://nodei.co/npm/zest-runner.png)](https://nodei.co/npm/zest-runner/)
+
 A runtime for Zest scripts.
 
 ## To use
