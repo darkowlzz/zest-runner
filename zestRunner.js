@@ -5,7 +5,8 @@ module.exports = ZestRunner;
 var ZestCreator = require('zest-creator'),
     Runtime     = require('./runtime'),
     LoopNext    = require('loopnext'),
-    _           = require('lodash');
+    _           = require('lodash'),
+    JefNode     = require('json-easy-filter').JefNode;
 
 var Q, defer;
 var NODE = 'node',
@@ -27,13 +28,15 @@ var DEBUG = true;
  */
 function ZestRunner (opts) {
   opts = opts || {};
+  var zc;
 
   // Create script depending on they type of source.
   if (opts.sourceType === 'file') {
-    this.script = new ZestCreator({file: opts.file});
+    zc = new ZestCreator({file: opts.file});
   } else if (opts.sourceType === 'object') {
-    this.script = new ZestCreator(opts, opts.zest);
+    zc = new ZestCreator(opts, opts.zest);
   }
+  this.script = zc.getZest();
 
   // Set default configuration variables.
   this.config = _.defaults(opts, {
@@ -64,6 +67,50 @@ ZestRunner.prototype = {
     }
   },
 
+  /**
+   * Validate values of script parameters.
+   * @return {Object} - validity result.
+   *    {
+   *      valid: (a Boolean with validity result),
+   *      message: (a String with reason for invalidity)
+   *    }
+   */
+  _validateParams: function () {
+    var that = this;
+    var valid = true,
+        defined = [],
+        missing = [],
+        tokens = that.script.parameters.tokens;
+    // If `parameters.tokens` is defined and `tokens` is not empty perform
+    // the testing.
+    if ((! _.isUndefined(tokens)) && (! _.isEmpty(tokens))) {
+      new JefNode(tokens).filter(function(ele) {
+        // Only when the token key is defined but value is empty, make as
+        // invalid and add the undefined tokens to `missing`.
+        if (! _.isUndefined(ele.key)) {
+          if (_.isEmpty(ele.value)) {
+            valid = false;
+            missing.push(ele.key);
+          } else {
+            defined.push(ele.key);
+          }
+        }
+      });
+    }
+    if (valid) {
+      // define the param tokens in runtime namespace.
+      defined.forEach(function (key) {
+        that.log('defining', key);
+        that.runtime.setDefinition(key, tokens[key]);
+      });
+    }
+    // Return validity result.
+    return {
+      valid: valid,
+      message: ('Undefined tokens ' + missing)
+    }
+  },
+
   // Run the whole script at once.
   run: function () {
     var that = this;
@@ -72,6 +119,10 @@ ZestRunner.prototype = {
     that.reset();
     var results = [];
     var deferred = defer();
+    var valid = that._validateParams();
+    if (! valid.valid) {
+      throw 'ERROR: ' + valid.message;
+    }
     var runStatus = true;
     loop.syncLoop(that.script.statements.length, function (l) {
       that.runtime.run(that.script.statements[that.count])

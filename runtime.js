@@ -45,6 +45,31 @@ function Runtime (opts) {
 
 Runtime.prototype = {
 
+  /**
+   * Define global variables.
+   * @param {String} name - Name of the global variable.
+   * @param {String} value - Value of the global variable.
+   */
+  setDefinition: function (name, value) {
+    var that = this;
+    if (name.indexOf('.') > -1) {
+      var parts = name.split('.');
+      var currentVar = that.globals;
+      parts.forEach(function (part) {
+        if (_.last(parts) === part) {
+          currentVar[part] = value;
+        } else {
+          if (_.isUndefined(currentVar[part])) {
+            currentVar[part] = {};
+          }
+          currentVar = currentVar[part];
+        }
+      });
+    } else {
+      this.globals[name] = value;
+    }
+  },
+
   // Print debug statements
   log: function (message, args) {
     if (this.config.debug) {
@@ -130,6 +155,7 @@ Runtime.prototype = {
         value = that.globals;
 
     var parts = name.split('.');
+    // iteratively fetch the required value
     parts.forEach(function (part) {
       value = value[part];
     });
