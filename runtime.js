@@ -170,7 +170,7 @@ Runtime.prototype = {
    */
   isPatternFound: function (pattern, subject) {
     var that = this;
-    // FIXME: create proper regex for true regex
+    pattern = that.cleanRegex(pattern);
     var re = new RegExp(pattern, 'gi');
     return re.test(subject);
   },
@@ -255,11 +255,13 @@ Runtime.prototype = {
       case 'ZestExpressionRegex':
         that.log('variableName:', exp.variableName);
         that.log('regex:', exp.regex);
+        var reg = that.cleanRegex(exp.regex);
+        that.log('cleaned regex:', reg);
         var flags = 'g';
         if (! exp.caseExact) {
           flags += 'i';
         }
-        var re = new RegExp(exp.regex, flags);
+        var re = new RegExp(reg, flags);
         if (that._getValue(exp.variableName).search(re) > -1) {
           result = { result: true };
         } else {
@@ -279,7 +281,11 @@ Runtime.prototype = {
         that.log('excludeRegexes:', exp.excludeRegexes);
         if (! _.isEmpty(exp.includeRegexes)) {
           exp.includeRegexes.some(function (pattern) {
-            if (that.isPatternFound(pattern, that.globals.response.url)) {
+            that.log('pattern:', pattern);
+            pattern = that.cleanRegex(pattern);
+            that.log('cleaned pattern:', pattern);
+            if (that.isPatternFound(pattern,
+                                    that.globals.response.url)) {
               result = { result: true };
               return true;
             }
@@ -287,6 +293,9 @@ Runtime.prototype = {
         }
         if (! _.isEmpty(exp.excludeRegexes)) {
           exp.excludeRegexes.some(function (pattern) {
+            that.log('pattern:', pattern);
+            pattern = that.cleanRegex(pattern);
+            that.log('pattern:', pattern);
             if (that.isPatternFound(pattern, that.globals.response.url)) {
               result = { result: false };
               return true;
@@ -521,8 +530,11 @@ Runtime.prototype = {
 
       case 'ZestAssignReplace':
         if (stmt.regex) {
-          // FIXME: create proper regex when regex is true
-          var re = new RegExp(stmt.replace, 'g');
+          var reg = stmt.replace;
+          that.log('pattern:', reg);
+          reg = that.cleanRegex(reg);
+          that.log('cleaned pattern:', reg);
+          var re = new RegExp(reg, 'g');
         } else {
           var re = new RegExp(stmt.replace, 'g');
         }
@@ -557,8 +569,10 @@ Runtime.prototype = {
         }
         that.log('location:', location);
         subject = that._getValue(location);
-        var startRegex = new RegExp(stmt.prefix);
-        var endRegex = new RegExp(stmt.postfix);
+        var prefixReg = that.cleanRegex(stmt.prefix);
+        var startRegex = new RegExp(prefixReg);
+        var postfixReg = that.cleanRegex(stmt.postfix);
+        var endRegex = new RegExp(postfixReg);
         var word = subject.match(startRegex)[0];
         start = subject.search(startRegex) + word.length;
         end = subject.search(endRegex);
@@ -606,8 +620,10 @@ Runtime.prototype = {
 
       case 'ZestLoopRegex':
         var loopVar = stmt.variableName;
-        var re = new RegExp(stmt.set.regex, 'g');
-        var tokens = that._getValue(stmt.set.inputVariableName).match(re);
+        var reg = that.cleanRegex(stmt.set.regex);
+        var re = new RegExp(reg, 'g');
+        var tokens = that._getValue(stmt.set.inputVariableName)
+                         .match(re);
         var count = 0;
         var loopResult = [];
         var loop = new LoopNext();
@@ -694,5 +710,21 @@ Runtime.prototype = {
         throw 'Unknown statement';
     }
     return deferred.promise;
+  },
+
+  /**
+   * Clear unnecessary dirt from regex string.
+   * @param {String} str - a regex string
+   * @return {String} - a clean regex string
+   */
+  cleanRegex: function (str) {
+    if (_.isEmpty(str)) {
+      return str;
+    }
+    var regexp = str;
+    if ((_.first(str) === '/') && (_.last(str) === '/')) {
+      regexp = regexp.slice(1, regexp.length - 1);
+    }
+    return regexp;
   }
 }

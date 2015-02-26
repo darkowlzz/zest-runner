@@ -58,9 +58,9 @@
       "elementType": "ZestAssignString"
     },
     {
-      "replace": "apples",
+      "replace": "/apples/",
       "replacement": "oranges",
-      "regex": false,
+      "regex": true,
       "caseExact": false,
       "variableName": "var4",
       "index": 7,
@@ -296,7 +296,7 @@
         },
         {
           "rootExpression": {
-            "regex": "example.com",
+            "regex": "/example.com/",
             "variableName": "response.url",
             "caseExact": false,
             "not": false,
