@@ -401,4 +401,28 @@ describe('==== test zest runtime ====', function () {
       });
     });
   });
+
+  describe('run LoopFile', function () {
+    it('should run LoopFile', function (done) {
+      this.timeout(TIME);
+      runtime.run(zc.getStatement(42))
+      .then(function (r) {
+        r[0][0].print.should.be.exactly('Attacking with 0');
+        r[1][0].print.should.be.exactly('Attacking with 1');
+        r[2][0].print.should.be.exactly('Attacking with 2');
+        r[3][0].print.should.be.exactly('Attacking with 3');
+        r[4][0].print.should.be.exactly('Attacking with 4');
+        r[5][0].print.should.be.exactly('Attacking with 5');
+        r[6][0].print.should.be.exactly('Attacking with 6');
+        r[7][0].print.should.be.exactly('Attacking with 7');
+        r[8][0].print.should.be.exactly('Attacking with 8');
+        r[9][0].print.should.be.exactly('Attacking with 9');
+        r[0][0].type.should.be.exactly('ZestActionPrint');
+        done();
+      })
+      .catch(function (err) {
+        done(err);
+      });
+    });
+  });
 });

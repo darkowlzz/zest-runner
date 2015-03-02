@@ -422,6 +422,24 @@ exports.sampleZest = {
       "index": 33,
       "enabled": true,
       "elementType": "ZestLoopRegex"
+    },
+    {
+      "set": {
+        "pathToFile": "~/fuzzerBase10",
+        "elementType": "ZestLoopTokenFileSet"
+      },
+      "statements": [
+        {
+          "message": "Attacking with {{zoo}}",
+          "index": 37,
+          "enabled": true,
+          "elementType": "ZestActionPrint"
+        }
+      ],
+      "variableName": "zoo",
+      "index": 36,
+      "enabled": true,
+      "elementType": "ZestLoopFile"
     }
   ],
   "authentication": [],

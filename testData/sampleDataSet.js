@@ -489,6 +489,24 @@
       "index": 41,
       "enabled": true,
       "elementType": "ZestAssignRegexDelimiters"
+    },
+    {
+      "set": {
+        "pathToFile": "./testData/fuzzerBase10",
+        "elementType": "ZestLoopTokenFileSet"
+      },
+      "statements": [
+        {
+          "message": "Attacking with {{zoo}}",
+          "index": 43,
+          "enabled": true,
+          "elementType": "ZestActionPrint"
+        }
+      ],
+      "variableName": "zoo",
+      "index": 42,
+      "enabled": true,
+      "elementType": "ZestLoopFile"
     }
   ],
   "authentication": [],

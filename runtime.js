@@ -602,6 +602,34 @@ Runtime.prototype = {
         break;
 
       case 'ZestLoopFile':
+        var loopResult = [];
+        var loop = new LoopNext();
+        var count = 0;
+
+        try {
+          if (_.isEqual(that.config.platform, NODE)) {
+            var fs = require('fs');
+            var fileData = fs.readFileSync(stmt.set.pathToFile, 'utf8');
+            var values = fileData.split('\n');
+          } else if (_.isEqual(that.config.platform, FX)) {
+            var read = require('sdk/io/file').read;
+            var fileData = read(stmt.set.pathToFile);
+            var values = fileData.split('\n');
+          }
+
+          loop.syncLoop(values.length, function (l) {
+            that.globals[stmt.variableName] = values[count];
+            that._runBlock(stmt.statements)
+            .then(function (r) {
+              loopResult.push(r);
+              count++;
+              if (count === values.length) {
+                deferred.resolve(loopResult);
+              }
+              l.next();
+            });
+          });
+        } catch (e) {};
         break;
 
       case 'ZestLoopInteger':
