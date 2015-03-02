@@ -8,7 +8,9 @@
     "url": "git://github.com/darkowlzz/zest-runner.git"
   },
   "scripts": {
-    "test": "mocha; rsync -av --progress ./ jpmTest/zest/ --exclude jpmTest/; cd jpmTest/; jpm test; rm -rf zest;"
+    "test": "mocha && npm run test-prepare && npm run test-jpm",
+    "test-prepare": "cp jpmTest/test/fuzzerBase10 ~/; rsync -av --progress ./ jpmTest/zest/ --exclude jpmTest/",
+    "test-jpm": "cd jpmTest/; jpm test; rm -rf zest"
   },
   "author": "Sunny <indiasuny000@gmail.com> (darkowlzz)",
   "license": "MPL",

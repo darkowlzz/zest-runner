@@ -176,4 +176,25 @@ exports["test B3 - loop regex"] = function (assert, done) {
   });
 }
 
+exports["test B4 - loop file"] = function (assert, done) {
+  runtime.run(zc.getStatement(36))
+  .then(function (r) {
+    assert.ok(r[0][0].print === 'Attacking with 0');
+    assert.ok(r[1][0].print === 'Attacking with 1');
+    assert.ok(r[2][0].print === 'Attacking with 2');
+    assert.ok(r[3][0].print === 'Attacking with 3');
+    assert.ok(r[4][0].print === 'Attacking with 4');
+    assert.ok(r[5][0].print === 'Attacking with 5');
+    assert.ok(r[6][0].print === 'Attacking with 6');
+    assert.ok(r[7][0].print === 'Attacking with 7');
+    assert.ok(r[8][0].print === 'Attacking with 8');
+    assert.ok(r[9][0].print === 'Attacking with 9');
+    assert.ok(r[0][0].type === 'ZestActionPrint');
+    done();
+  })
+  .catch(function (err) {
+    done(err);
+  });
+}
+
 require("sdk/test").run(exports);
