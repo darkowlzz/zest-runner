@@ -1,6 +1,3 @@
-/* global console, require, module, setTimeout */
-
-
 module.exports = Runtime;
 
 var _             = require('lodash'),

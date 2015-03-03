@@ -1,5 +1,3 @@
-'use strict';
-
 module.exports = ZestRunner;
 
 var ZestCreator = require('zest-creator'),
@@ -27,6 +25,8 @@ var DEBUG = true;
  *   }
  */
 function ZestRunner (opts) {
+  'use strict';
+
   opts = opts || {};
   var zc;
 
@@ -59,13 +59,20 @@ function ZestRunner (opts) {
   this.count = 0;
 }
 
+
 ZestRunner.prototype = {
 
+  /**
+   * Add result of a statement to result of the whole script.
+   * @param {Object} results - result of the whole script.
+   * @param {Object} r - result of a statement.
+   */
   _addToResults: function (results, r) {
     if (! _.isEmpty(r)) {
       results.push(r);
     }
   },
+
 
   /**
    * Validate values of script parameters.
@@ -108,8 +115,9 @@ ZestRunner.prototype = {
     return {
       valid: valid,
       message: ('Undefined tokens ' + missing)
-    }
+    };
   },
+
 
   // Run the whole script at once.
   run: function () {
@@ -136,7 +144,7 @@ ZestRunner.prototype = {
                   runStatus = false;
                   deferred.resolve(results);
                 }
-              })
+              });
             } else if (aRslt.type === 'ZestActionFail') {
               that._addToResults(results, aRslt);
               runStatus = false;
@@ -167,7 +175,9 @@ ZestRunner.prototype = {
     return deferred.promise;
   },
 
+
   // Run the script one statement at a time.
+  // NEED TO BE FIXED - INCOMPLETE
   runNext: function () {
     var deferred = defer();
     var that = this;
@@ -189,10 +199,12 @@ ZestRunner.prototype = {
     return deferred.promise;
   },
 
+
   // Reset the statement run counter.
   reset: function () {
     this.count = 0;
   },
+
 
   // Print debug statements
   log: function (message, args) {
