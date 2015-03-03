@@ -10,6 +10,8 @@ describe('==== test zest runtime ====', function () {
   var zc = new ZestCreator({file: 'testData/sampleDataSet.js',
                             debug: true});
   var runtime = new Runtime({debug: true});
+  runtime.setDefinition('tokenStart', '{{');
+  runtime.setDefinition('tokenEnd', '}}');
 
   describe('run assign statements', function () {
     it('assignString', function (done) {
@@ -88,7 +90,6 @@ describe('==== test zest runtime ====', function () {
       this.timeout(TIME);
       runtime.run(zc.getStatement(26))
       .then(function (r) {
-        console.log(r);
         r.print.should.be.exactly('boom! berry');
         r.priority.should.be.exactly('HIGH');
         done();

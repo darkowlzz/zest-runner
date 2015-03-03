@@ -89,7 +89,9 @@ Runtime.prototype = {
     var that = this,
         globals = that.globals;
 
-    var message = msg.replace(/({{\w+\.*\w*}})/g,
+    var varTemplateRegex = globals.tokenStart + '\\w+\\.*\\w*' + globals.tokenEnd;
+    var re = new RegExp(varTemplateRegex, 'g');
+    var message = msg.replace(re,
       function (matchWord) {
         var variables = matchWord.match(/(\w+\.*\w*)/g);
         return that._getValue(variables[0]);

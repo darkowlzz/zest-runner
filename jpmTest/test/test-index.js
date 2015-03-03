@@ -6,11 +6,10 @@ var main = require("../"),
 
 var zc = new ZestCreator({debug: true}, sampleZest);
 var runtime = new Runtime({debug: true, platform: 'firefox'});
-
+runtime.setDefinition('tokenStart', '{{');
+runtime.setDefinition('tokenEnd', '}}');
 
 exports["test A1 - comment and var assignment"] = function(assert, done) {
-  //assert.pass("async Unit test running!");
-
   runtime.run(zc.getStatement(1))
   .then(function () {
     return runtime.run(zc.getStatement(2));

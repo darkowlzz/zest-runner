@@ -87,8 +87,10 @@ ZestRunner.prototype = {
     var valid = true,
         defined = [],
         missing = [],
-        tokens = that.script.parameters.tokens;
-    // If `parameters.tokens` is defined and `tokens` is not empty perform
+        tokens = that.script.parameters.tokens,
+        tokenStart = that.script.parameters.tokenStart,
+        tokenEnd = that.script.parameters.tokenEnd;
+    // If `parameters.tokens` is defined and `tokens` is not empty, perform
     // the testing.
     if ((! _.isUndefined(tokens)) && (! _.isEmpty(tokens))) {
       new JefNode(tokens).filter(function(ele) {
@@ -104,6 +106,18 @@ ZestRunner.prototype = {
         }
       });
     }
+
+    if ((! _.isUndefined(tokenStart)) && (! _.isEmpty(tokenStart)) &&
+        (! _.isUndefined(tokenEnd)) && (! _.isEmpty(tokenEnd))) {
+      that.runtime.setDefinition('tokenStart', tokenStart);
+      console.log('tokenStart:', tokenStart);
+      that.runtime.setDefinition('tokenEnd', tokenEnd);
+      console.log('tokenEnd:', tokenEnd);
+    } else {
+      valid = false;
+      throw 'ERROR: tokenStart and tokenEnd not defined';
+    }
+
     if (valid) {
       // define the param tokens in runtime namespace.
       defined.forEach(function (key) {

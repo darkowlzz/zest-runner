@@ -7,7 +7,8 @@ var ZestRunner = require('../'),
 
 var fileWithFail = 'testData/dataSetFail.js',
     fileFull = 'testData/sampleDataSet.js',
-    fileShort = 'testData/shortSet.js';
+    fileShort = 'testData/shortSet.js',
+    fileNewTokens = 'testData/sampleDataNewTokens.js';
 var TIME = 20000;
 
 describe('==== test zest runner ====', function () {
@@ -103,6 +104,24 @@ describe('==== test zest runner ====', function () {
       zestRunner.count.should.be.exactly(5);
       zestRunner.reset();
       zestRunner.count.should.be.exactly(0);
+      done();
+    })
+    .catch(function (err) {
+      done(err);
+    });
+  });
+
+  it('should run with new token start/end', function (done) {
+    this.timeout(TIME);
+    opts.file = fileNewTokens;
+    zestRunner = new ZestRunner(opts);
+    zestRunner.run()
+    .then(function (r) {
+      r[0].print.should.be.exactly('hi a');
+      r[1].print.should.be.exactly('yo');
+      r[2].print.should.be.exactly('hi b');
+      r[6].print.should.be.exactly('hi d');
+      r[7].print.should.be.exactly('yo');
       done();
     })
     .catch(function (err) {
