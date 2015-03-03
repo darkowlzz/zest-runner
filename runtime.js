@@ -1,4 +1,5 @@
-'use strict';
+/* global console, require, module, setTimeout */
+
 
 module.exports = Runtime;
 
@@ -17,6 +18,8 @@ var NODE = 'node',
  * @param {Object} opts - Contains optional config values.
  */
 function Runtime (opts) {
+  'use strict';
+
   opts = opts || {};
 
   // Set default configuration variables.
@@ -70,12 +73,14 @@ Runtime.prototype = {
     }
   },
 
+
   // Print debug statements
   log: function (message, args) {
     if (this.config.debug) {
       console.log('DEBUG: ', message, args);
     }
   },
+
 
   /**
    * Find variables in message string, replace them with values and return
@@ -96,6 +101,7 @@ Runtime.prototype = {
     return message;
   },
 
+
   /**
    * Get value of a given form field.
    * @param {Object} stmt - Statement which contains the field definition.
@@ -110,7 +116,7 @@ Runtime.prototype = {
     if (_.isEqual(that.config.platform, NODE)) {
       formInput(globals.response.body)
       .then(function (forms) {
-        var value = forms[stmt.formIndex]['values'][stmt.fieldName];
+        var value = forms[stmt.formIndex].values[stmt.fieldName];
         deferred.resolve(value);
       });
     }
@@ -120,6 +126,7 @@ Runtime.prototype = {
     }
     return deferred.promise;
   },
+
 
   /**
    * Run a block of statements
@@ -145,6 +152,7 @@ Runtime.prototype = {
     return deferred.promise;
   },
 
+
   /**
    * Get variable value from a string variable name, like 'response.body'
    * @param {String} name - String name of the variable
@@ -162,6 +170,7 @@ Runtime.prototype = {
     return value;
   },
 
+
   /**
    * Checks if a pattern is present a given subject.
    * @param {Regex/String} pattern - A regex or a string to be searched.
@@ -175,30 +184,6 @@ Runtime.prototype = {
     return re.test(subject);
   },
 
-  failMsgGenerator: function (expression, rawData) {
-    var finalMsg = 'FAILED Assert - ';
-    switch(expression) {
-      case 'ZestExpressionStatusCode':
-        finalMsg += 'Status Code: expected ' + rawData.expected + ' got ' +
-                    rawData.actual;
-        break;
-
-      case 'ZestExpressionLength':
-        finalMsg += rawData.variableName + ' length: expected ' + rawData.expected +
-                    ' got ' + rawData.actual;
-        break;
-
-      case 'ZestExpressionRegex':
-        finalMsg += rawData.variableName + ' doesnt include regex: ' + rawData.regex;
-        break;
-
-      case 'ZestExpressionIsInteger':
-
-        break;
-    }
-
-    return finalMsg;
-  },
 
   /**
    * Evaluate zest expressions.
@@ -207,28 +192,55 @@ Runtime.prototype = {
    */
   evalExpression: function (exp) {
     var that = this;
-    var result;
+    var result, expected, actual;
+
+    // Expression fail message generator for assertion expressions
+    // (StatusCode, length, regex)
+    function failMsgGenerator (expression, rawData) {
+      var finalMsg = 'FAILED Assert - ';
+      switch(expression) {
+        case 'ZestExpressionStatusCode':
+          finalMsg += 'Status Code: expected ' + rawData.expected + ' got ' +
+                      rawData.actual;
+          break;
+
+        case 'ZestExpressionLength':
+          finalMsg += rawData.variableName + ' length: expected ' + rawData.expected +
+                      ' got ' + rawData.actual;
+          break;
+
+        case 'ZestExpressionRegex':
+          finalMsg += rawData.variableName + ' doesnt include regex: ' + rawData.regex;
+          break;
+      }
+      return finalMsg;
+    }
+
     switch(exp.elementType) {
       case 'ZestExpressionStatusCode':
-        var expected = exp.code,
-            actual = that.globals.response.statusCode;
+        // Compare expected and actual statusCode.
+        expected = exp.code;
+        actual = that.globals.response.statusCode;
         that.log('expected statusCode: ', exp.code);
         that.log('actual statusCode: ', that.globals.response.statusCode);
         if (_.isEqual(expected, actual)) {
           result = { result: true };
         } else {
-          result = { result: false,
-                     message: that.failMsgGenerator(exp.elementType, {
-                       expected: expected,
-                       actual: actual
-                     })
-                   }
+          result = {
+            result: false,
+            message: failMsgGenerator(exp.elementType, {
+              expected: expected,
+              actual: actual
+            })
+          };
         }
         break;
 
+
       case 'ZestExpressionLength':
-        var expected = exp.length,
-            actual = that._getValue(exp.variableName).length;
+        // Compare expected and actual length value.
+        expected = exp.length;
+        actual = that._getValue(exp.variableName).length;
         that.log('actual ' + exp.variableName + '.length:',
                   that._getValue(exp.variableName).length);
         that.log('expected ' + exp.variableName + '.length',
@@ -242,17 +254,20 @@ Runtime.prototype = {
         if ((actual >= lowerLimit) && (actual <= upperLimit)) {
           result = { result: true };
         } else {
-          result = { result: false,
-                     message: that.failMsgGenerator(exp.elementType, {
-                                variableName: exp.variableName,
-                                expected: expected,
-                                actual: actual
-                     })
-                   };
+          result = {
+            result: false,
+            message: failMsgGenerator(exp.elementType, {
+              variableName: exp.variableName,
+              expected: expected,
+              actual: actual
+            })
+          };
         }
         break;
 
+
       case 'ZestExpressionRegex':
+        // Check if the regex match content of the given variable.
         that.log('variableName:', exp.variableName);
         that.log('regex:', exp.regex);
         var reg = that.cleanRegex(exp.regex);
@@ -265,16 +280,19 @@ Runtime.prototype = {
         if (that._getValue(exp.variableName).search(re) > -1) {
           result = { result: true };
         } else {
-          result = { result: false,
-                     message: that.failMsgGenerator(exp.elementType, {
-                       variableName: exp.variableName,
-                       regex: exp.regex
-                     })
-                   };
+          result = {
+            result: false,
+            message: failMsgGenerator(exp.elementType, {
+              variableName: exp.variableName,
+              regex: exp.regex
+            })
+          };
         }
         break;
 
+
       case 'ZestExpressionURL':
+        // Check if request url is in include regex and not in exculde regex.
         result = { result: false };
         that.log('url:', that.globals.response.url);
         that.log('includeRegexes:', exp.includeRegexes);
@@ -284,8 +302,7 @@ Runtime.prototype = {
             that.log('pattern:', pattern);
             pattern = that.cleanRegex(pattern);
             that.log('cleaned pattern:', pattern);
-            if (that.isPatternFound(pattern,
-                                    that.globals.response.url)) {
+            if (that.isPatternFound(pattern, that.globals.response.url)) {
               result = { result: true };
               return true;
             }
@@ -304,35 +321,41 @@ Runtime.prototype = {
         }
         break;
 
+
       case 'ZestExpressionEquals':
-        var expected = exp.value,
-            real = that._getValue(exp.variableName);
+        // Compare the given value with variable value.
+        expected = exp.value;
+        actual = that._getValue(exp.variableName);
         that.log('response.url:', that._getValue(exp.variableName));
         that.log('value:', exp.value);
         if (! exp.caseExact) {
           expected = expected.toLowerCase();
-          real = real.toLowerCase();
+          actual = actual.toLowerCase();
         }
-        if (_.isEqual(expected, real)) {
+        if (_.isEqual(expected, actual)) {
           result = { result: true };
         } else {
           result = { result: false };
         }
         break;
 
+
       case 'ZestExpressionResponseTime':
-        var expected = exp.timeInMs,
-            real = that.globals.response.responseTimeInMs;
-        that.log('real TimeInMs:', real);
+        // Compare actual and expected response time.
+        expected = exp.timeInMs;
+        actual = that.globals.response.responseTimeInMs;
+        that.log('actual TimeInMs:', actual);
         that.log('expected TimeInMs:', expected);
         if (exp.greaterThan) {
-          result = { result: (real > expected) };
+          result = { result: (actual > expected) };
         } else {
-          result = { result: (_.isEqual(real, expected)) };
+          result = { result: (_.isEqual(actual, expected)) };
         }
         break;
 
+
       case 'ZestExpressionIsInteger':
+        // Check if a value is an integer.
         var num = parseInt(that._getValue(exp.variableName));
         if (isNaN(num)) {
           result = { result: false };
@@ -341,10 +364,12 @@ Runtime.prototype = {
         }
         break;
 
+
       default:
         throw 'Unknown expression';
     }
 
+    // if `not` is true, inverse the result.
     if (exp.not) {
       result.result = ! result.result;
       return result;
@@ -352,6 +377,7 @@ Runtime.prototype = {
       return result;
     }
   },
+
 
   /**
    * Run a statement.
@@ -361,21 +387,54 @@ Runtime.prototype = {
   run: function (stmt) {
     var that = this;
     var deferred = defer();
-    that.log('running statement: ', [stmt.index, stmt.elementType]);
+    var message, loopVar, loopResult, loop, tokens, count, re,
+        location, subject, start, end;
 
+    // Format result for request based statements.
+    function requestResult () {
+      return {
+        result: that.globals.requestResult,
+        message: that.globals.resultMessage || '',
+        method: that.globals.request.method,
+        url: that.globals.request.url,
+        code: that.globals.response.statusCode,
+        rtt: that.globals.response.responseTimeInMs + ' ms',
+        type: stmt.elementType
+      };
+    }
+
+    // Process the assertions in a statement.
+    function processAsserts () {
+      if (! _.isEmpty(stmt.assertions)) {
+        var evalResult;
+        stmt.assertions.some(function (exp) {
+          that.log('assertion expression:', exp.rootExpression.elementType);
+          evalResult = that.evalExpression(exp.rootExpression);
+          if (! evalResult.result) {
+            that.globals.requestResult = false;
+            that.globals.resultMessage = evalResult.message;
+            return true;
+          }
+        });
+      }
+    }
+
+    that.log('running statement: ', [stmt.index, stmt.elementType]);
     switch (stmt.elementType) {
+
       case 'ZestComment':
         deferred.resolve({});
         break;
 
+
       case 'ZestRequest':
-        var startTime, stopTime;
+        var startTime, stopTime, options;
         that.globals.requestResult = true;
         that.globals.resultMessage = '';
 
         if (_.isEqual(that.config.platform, NODE)) {
           /** node.js request **/
-          var options = {
+          options = {
             url: stmt.url,
             headers: simpleHeaders.parse(stmt.headers) || '',
             body: stmt.data || '',
@@ -386,10 +445,9 @@ Runtime.prototype = {
             utils.appendCookies(stmt);
             options.headers = simpleHeaders.parse(stmt.headers);
           }
-
           that.log('request options:', options);
           that.globals.request = options;
-
+          // Start timer
           startTime = new Date().getTime();
           var r = request(options, function (error, response, body) {
             if (!error) {
@@ -404,42 +462,23 @@ Runtime.prototype = {
                 body: body,
                 statusCode: response.statusCode,
                 responseTimeInMs: (stopTime - startTime)
-              }
+              };
               that.log('response: ', that.globals.response);
-              if (! _.isEmpty(stmt.assertions)) {
-                var evalResult;
-                stmt.assertions.some(function (exp) {
-                  that.log('assertion expression:', exp.rootExpression.elementType);
-                  evalResult = that.evalExpression(exp.rootExpression);
-                  if (! evalResult.result) {
-                    that.globals.requestResult = false;
-                    that.globals.resultMessage = evalResult.message;
-                    return true;
-                  }
-                });
-              }
-              deferred.resolve({
-                result: that.globals.requestResult,
-                message: that.globals.resultMessage || '',
-                method: that.globals.request.method,
-                url: that.globals.request.url,
-                code: that.globals.response.statusCode,
-                rtt: that.globals.response.responseTimeInMs + ' ms',
-                type: stmt.elementType
-              });
+              // Evaluate the assertion stmts if any
+              processAsserts();
+              deferred.resolve(requestResult());
             } else {
               deferred.resolve('error in request');
             }
           });
           /** end of node.js request **/
-
         } else if (_.isEqual(that.config.platform, FX)) {
           var fullHeaders = simpleHeaders.parse(stmt.headers) || '';
           if (! _.isEmpty(stmt.cookies)) {
             utils.appendCookies(stmt);
             fullHeaders = simpleHeaders.parse(stmt.headers);
           }
-          var options = {
+          options = {
             url: stmt.url,
             headers: fullHeaders,
             content: stmt.data || '',
@@ -451,51 +490,51 @@ Runtime.prototype = {
                 body: response.text,
                 statusCode: response.status,
                 responseTimeInMs: (stopTime - startTime)
-              }
+              };
               that.log('response: ', that.globals.response);
-              if (! _.isEmpty(stmt.assertions)) {
-                var evalResult;
-                stmt.assertions.some(function (exp) {
-                  evalResult = that.evalExpression(exp.rootExpression);
-                  if (! evalResult.result) {
-                    that.globals.requestResult = false;
-                    that.globals.resultMessage = evalResult.message;
-                    return true;
-                  }
-                });
-              }
-              deferred.resolve({
-                result: that.globals.requestResult,
-                message: that.globals.resultMessage,
-                method: that.globals.request.method,
-                url: that.globals.request.url,
-                code: that.globals.response.statusCode,
-                rtt: that.globals.response.responseTimeInMs + ' ms',
-                type: stmt.elementType
-              });
+              // Evaluate the assertion stmts if any
+              processAsserts();
+              deferred.resolve(requestResult());
             }
-          }
-
+          };
           that.globals.request = {
             url: options.url,
             headers: options.headers,
             body: options.content,
             method: options.method,
             followRedirect: true
-          }
+          };
+          // Create request
           var aReq = request(options);
-          if (stmt.method === 'GET') {
-            aReq.get();
-          } else if (stmt.method === 'POST') {
-            aReq.post();
+          // Make request
+          switch (stmt.method) {
+            case 'GET':
+              aReq.get();
+              break;
+            case 'POST':
+              aReq.post();
+              break;
+            case 'PUT':
+              aReq.put();
+              break;
+            case 'HEAD':
+              aReq.head();
+              break;
+            case 'DELETE':
+              aReq.delete();
+              break;
+            default:
+              console.log('Unknown request method');
+              return;
           }
+          // Start timer
           startTime = new Date().getTime();
         }
         break;
 
+
       case 'ZestConditional':
-        //if (_.isEqual(that._getValue(stmt.rootExpression.variableName),
-        //              stmt.rootExpression.value)) {
+        // Evaluate the conditional expression and run appropriate block
         if (that.evalExpression(stmt.rootExpression).result) {
           that._runBlock(stmt.ifStatements)
           .then(function (r) {
@@ -509,18 +548,24 @@ Runtime.prototype = {
         }
         break;
 
+
       case 'ZestAssignString':
+        // Assign value to variable
         that.globals[stmt.variableName] = stmt.string;
         deferred.resolve({});
         break;
 
+
       case 'ZestAssignRandomInteger':
+        // Assign a random number
         that.globals[stmt.variableName] = 
           (rand.intBetween(stmt.minInt, stmt.maxInt)).toString();
         deferred.resolve({});
         break;
 
+
       case 'ZestAssignFieldValue':
+        // Assign form field value to variable
         that._getDefinition(stmt.fieldDefinition)
         .then(function (value) {
           that.globals[stmt.variableName] = value;
@@ -528,24 +573,25 @@ Runtime.prototype = {
         });
         break;
 
+
       case 'ZestAssignReplace':
+        // Find and replace pattern in variable
         if (stmt.regex) {
-          var reg = stmt.replace;
-          that.log('pattern:', reg);
-          reg = that.cleanRegex(reg);
+          that.log('pattern:', stmt.replace);
+          reg = that.cleanRegex(stmt.replace);
           that.log('cleaned pattern:', reg);
-          var re = new RegExp(reg, 'g');
+          re = new RegExp(reg, 'g');
         } else {
-          var re = new RegExp(stmt.replace, 'g');
+          re = new RegExp(stmt.replace, 'g');
         }
-        that.globals[stmt.variableName] = that._getValue(stmt.variableName).replace(
-                                       re, stmt.replacement
-                                     );
+        that.globals[stmt.variableName] =
+          that._getValue(stmt.variableName).replace(re, stmt.replacement);
         deferred.resolve({});
         break;
 
+
       case 'ZestAssignStringDelimiters':
-        var location, subject, start, end;
+        // Assign location content within prefix and postfix to variable.
         if (stmt.location === 'HEAD') {
           location = 'response.headers';
         } else if (stmt.location === 'BODY') {
@@ -560,8 +606,9 @@ Runtime.prototype = {
         deferred.resolve({});
         break;
 
+
       case 'ZestAssignRegexDelimiters':
-        var location, subject, start, end;
+        // Assign location content within prefix and postfix regex to variable.
         if (stmt.location === 'HEAD') {
           location = 'response.headers';
         } else if (stmt.location === 'BODY') {
@@ -581,12 +628,15 @@ Runtime.prototype = {
         deferred.resolve({});
         break;
 
+
       case 'ZestLoopString':
-        var tokens = stmt.set.tokens;
-        var loopVar = stmt.variableName;
-        var count = 0;
-        var loopResult = [];
-        var loop = new LoopNext();
+        // Loop through the given set of string tokens, assigning the token
+        // value to the given variable.
+        tokens = stmt.set.tokens;
+        loopVar = stmt.variableName;
+        count = 0;
+        loopResult = [];
+        loop = new LoopNext();
         loop.syncLoop(tokens.length, function (l) {
           that.globals[loopVar] = tokens[count];
           that._runBlock(stmt.statements)
@@ -601,22 +651,24 @@ Runtime.prototype = {
         });
         break;
 
-      case 'ZestLoopFile':
-        var loopResult = [];
-        var loop = new LoopNext();
-        var count = 0;
 
+      case 'ZestLoopFile':
+        // Loop through file content line-by-line, assigning the line content
+        // to the given variable.
+        loopResult = [];
+        loop = new LoopNext();
+        count = 0;
+        var fileData, values;
         try {
           if (_.isEqual(that.config.platform, NODE)) {
             var fs = require('fs');
-            var fileData = fs.readFileSync(stmt.set.pathToFile, 'utf8');
-            var values = fileData.split('\n');
+            fileData = fs.readFileSync(stmt.set.pathToFile, 'utf8');
+            values = fileData.split('\n');
           } else if (_.isEqual(that.config.platform, FX)) {
             var read = require('sdk/io/file').read;
-            var fileData = read(stmt.set.pathToFile);
-            var values = fileData.split('\n');
+            fileData = read(stmt.set.pathToFile);
+            values = fileData.split('\n');
           }
-
           loop.syncLoop(values.length, function (l) {
             that.globals[stmt.variableName] = values[count];
             that._runBlock(stmt.statements)
@@ -629,11 +681,14 @@ Runtime.prototype = {
               l.next();
             });
           });
-        } catch (e) {};
+        } catch (e) {}
         break;
 
+
       case 'ZestLoopInteger':
-        var loopVar = stmt.variableName;
+        // Loop through the given range of integers, assigning the integer
+        // value to the given variable.
+        loopVar = stmt.variableName;
         for (var i = stmt.set.start; i < stmt.set.end; i += stmt.set.step) {
           that.globals[loopVar] = i;
           for (var j = 0; j < stmt.statements.length; j++) {
@@ -643,18 +698,22 @@ Runtime.prototype = {
         deferred.resolve({});
         break;
 
+
       case 'ZestLoopClientElements':
+        // Need to be implemented.
+        deferred.resolve({});
         break;
 
+
       case 'ZestLoopRegex':
-        var loopVar = stmt.variableName;
+        // Loop through the elements matching the given regex.
+        loopVar = stmt.variableName;
         var reg = that.cleanRegex(stmt.set.regex);
-        var re = new RegExp(reg, 'g');
-        var tokens = that._getValue(stmt.set.inputVariableName)
-                         .match(re);
-        var count = 0;
-        var loopResult = [];
-        var loop = new LoopNext();
+        re = new RegExp(reg, 'g');
+        tokens = that._getValue(stmt.set.inputVariableName).match(re);
+        count = 0;
+        loopResult = [];
+        loop = new LoopNext();
         loop.syncLoop(tokens.length, function (l) {
           that.globals[loopVar] = tokens[count];
           that._runBlock(stmt.statements)
@@ -669,14 +728,18 @@ Runtime.prototype = {
         });
         break;
 
+
       case 'ZestActionPrint':
-        var message = that._findAndReplace(stmt.message);
+        // Print message, replacing any variable's value if exists.
+        message = that._findAndReplace(stmt.message);
         that.log('print:', message);
         deferred.resolve({ print: message,
                            type: stmt.elementType });
         break;
 
+
       case 'ZestActionSleep':
+        // Suspend the script execution for some duration.
         if (_.isEqual(that.config.platform, NODE)) {
           setTimeout(function () {
             deferred.resolve({});
@@ -688,8 +751,10 @@ Runtime.prototype = {
         }
         break;
 
+
       case 'ZestActionFail':
-        var message = that._findAndReplace(stmt.message)
+        // Print failure message and stop script execution.
+        message = that._findAndReplace(stmt.message);
         that.log('Failed:', message);
         deferred.resolve({ result: false,
                            print: message,
@@ -697,42 +762,41 @@ Runtime.prototype = {
                            type: stmt.elementType });
         break;
 
+
       case 'ZestAssignCalc':
+        // Perform arithmetic operations on the variables.
         var oprndA, oprndB;
         if (typeof(stmt.operandA) === 'number') {
-          var oprndA = stmt.operandA;
+          oprndA = stmt.operandA;
         } else {
-          var oprndA = parseFloat(that._getValue(stmt.operandA));
+          oprndA = parseFloat(that._getValue(stmt.operandA));
         }
 
         if (typeof(stmt.operandB) === 'number') {
-          var oprndB = stmt.operandB;
+          oprndB = stmt.operandB;
         } else {
-          var oprndB = parseFloat(that._getValue(stmt.operandB));
+          oprndB = parseFloat(that._getValue(stmt.operandB));
         }
 
         switch (stmt.operation) {
           case 'add':
             that.globals[stmt.variableName] = (oprndA + oprndB).toString();
             break;
-
           case 'subtract':
             that.globals[stmt.variableName] = (oprndA - oprndB).toString();
             break;
-
           case 'multiply':
             that.globals[stmt.variableName] = (oprndA * oprndB).toString();
             break;
-
           case 'divide':
             that.globals[stmt.variableName] = (oprndA / oprndB).toString();
             break;
-
           default:
             console.log('unknown operation');
         }
         deferred.resolve({});
         break;
+
 
       default:
         throw 'Unknown statement';
@@ -740,19 +804,22 @@ Runtime.prototype = {
     return deferred.promise;
   },
 
+
   /**
    * Clear unnecessary dirt from regex string.
    * @param {String} str - a regex string
    * @return {String} - a clean regex string
    */
   cleanRegex: function (str) {
+    // return if empty
     if (_.isEmpty(str)) {
       return str;
     }
     var regexp = str;
+    // remove `/` from start and end.
     if ((_.first(str) === '/') && (_.last(str) === '/')) {
       regexp = regexp.slice(1, regexp.length - 1);
     }
     return regexp;
   }
-}
+};
