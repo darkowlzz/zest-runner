@@ -10,6 +10,7 @@ var Q, defer, formInput, request, _setTimeout;
 var NODE = 'node',
     FX   = 'firefox';
 
+
 /**
  * Zest Runtime.
  * @param {Object} opts - Contains optional config values.
@@ -22,7 +23,8 @@ function Runtime (opts) {
   // Set default configuration variables.
   this.config = _.defaults(opts, {
     debug: false,
-    platform: NODE
+    platform: NODE,
+    type: 'Standalone'
   });
 
   try {
@@ -70,6 +72,12 @@ Runtime.prototype = {
     }
   },
 
+
+  // Find out if a script is passive.
+  // @return {boolean} - true if the script is passive, else false.
+  isPassive: function () {
+    return _.isEqual(this.config.type, 'Passive');
+  },
 
   // Print debug statements
   log: function (message, args) {

@@ -55,7 +55,8 @@ function ZestRunner (opts) {
 
   // Create runtime object and a run counter.
   this.runtime = new Runtime({debug: this.config.debug,
-                              platform: this.config.platform});
+                              platform: this.config.platform,
+                              type: this.script.type});
   this.count = 0;
 }
 

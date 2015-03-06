@@ -427,3 +427,45 @@ describe('==== test zest runtime ====', function () {
     });
   });
 });
+
+
+describe('==== test zest runtime internals ====', function () {
+  var runtime = new Runtime({debug: true});
+
+  it('should have default config', function () {
+    runtime.config.should.have.properties({
+      debug: true,
+      platform: 'node',
+      type: 'Standalone'
+    });
+  });
+
+  it('should have empty globals', function () {
+    runtime.globals.should.be.empty;
+  });
+
+  it('setDefinition should work', function () {
+    runtime.setDefinition('foo', 'bar');
+    runtime.setDefinition('apple', 3);
+    runtime.setDefinition('one.two', 6);
+    runtime.globals.should.have.properties({
+      'foo': 'bar',
+      'apple': 3,
+    });
+    runtime.globals.one.should.have.properties({two: 6});
+  });
+
+  it('should not be a passive script', function () {
+    runtime.isPassive().should.be.false;
+  });
+
+  it('_getValue should return correct value', function () {
+    runtime._getValue('foo').should.be.exactly('bar');
+    runtime._getValue('one.two').should.be.exactly(6);
+  });
+
+  it('should clear regex', function () {
+   runtime.cleanRegex('/cool/').should.be.exactly('cool');
+   runtime.cleanRegex('cool').should.be.exactly('cool');
+  });
+});
