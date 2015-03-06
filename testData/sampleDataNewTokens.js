@@ -4,7 +4,7 @@
   "title": "zzzz",
   "description": "A template standalone script",
   "prefix": "",
-  "type": "Targeted",
+  "type": "Standalone",
   "parameters": {
     "tokenStart": "<<",
     "tokenEnd": ">>",
