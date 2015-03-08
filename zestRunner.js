@@ -75,38 +75,12 @@ ZestRunner.prototype = {
   },
 
 
-  /**
-   * Validate values of script parameters.
-   * @return {Object} - validity result.
-   *    {
-   *      valid: (a Boolean with validity result),
-   *      message: (a String with reason for invalidity)
-   *    }
-   */
-  _validateParams: function () {
-    var that = this;
-    var valid = true,
-        defined = [],
-        missing = [],
+  // Initialize all the tokens values.
+  _initializeTokens: function () {
+    var that = this,
         tokens = that.script.parameters.tokens,
         tokenStart = that.script.parameters.tokenStart,
         tokenEnd = that.script.parameters.tokenEnd;
-    // If `parameters.tokens` is defined and `tokens` is not empty, perform
-    // the testing.
-    if ((! _.isUndefined(tokens)) && (! _.isEmpty(tokens))) {
-      new JefNode(tokens).filter(function(ele) {
-        // Only when the token key is defined but value is empty, make as
-        // invalid and add the undefined tokens to `missing`.
-        if (! _.isUndefined(ele.key)) {
-          if (_.isEmpty(ele.value)) {
-            valid = false;
-            missing.push(ele.key);
-          } else {
-            defined.push(ele.key);
-          }
-        }
-      });
-    }
 
     if ((! _.isUndefined(tokenStart)) && (! _.isEmpty(tokenStart)) &&
         (! _.isUndefined(tokenEnd)) && (! _.isEmpty(tokenEnd))) {
@@ -114,23 +88,15 @@ ZestRunner.prototype = {
       console.log('tokenStart:', tokenStart);
       that.runtime.setDefinition('tokenEnd', tokenEnd);
       console.log('tokenEnd:', tokenEnd);
-    } else {
-      valid = false;
-      throw 'ERROR: tokenStart and tokenEnd not defined';
     }
 
-    if (valid) {
-      // define the param tokens in runtime namespace.
-      defined.forEach(function (key) {
-        that.log('defining', key);
-        that.runtime.setDefinition(key, tokens[key]);
+    if ((! _.isUndefined(tokens)) && (! _.isEmpty(tokens))) {
+      new JefNode(tokens).filter(function (ele) {
+        if (! _.isUndefined(ele.key)) {
+          that.runtime.setDefinition(ele.key, ele.value);
+        }
       });
     }
-    // Return validity result.
-    return {
-      valid: valid,
-      message: ('Undefined tokens ' + missing)
-    };
   },
 
 
@@ -142,10 +108,7 @@ ZestRunner.prototype = {
     that.reset();
     var results = [];
     var deferred = defer();
-    var valid = that._validateParams();
-    if (! valid.valid) {
-      throw 'ERROR: ' + valid.message;
-    }
+    that._initializeTokens();
     var runStatus = true;
     loop.syncLoop(that.script.statements.length, function (l) {
       that.runtime.run(that.script.statements[that.count])
@@ -179,7 +142,7 @@ ZestRunner.prototype = {
 
         if (runStatus) {
           that.count++;
-          if (that.count === that.script.statements.length) {
+          if (that.count >= that.script.statements.length) {
             that.reset();
             deferred.resolve(results);
           }

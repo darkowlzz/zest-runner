@@ -8,7 +8,8 @@ var ZestRunner = require('../'),
 var fileWithFail = 'testData/dataSetFail.js',
     fileFull = 'testData/sampleDataSet.js',
     fileShort = 'testData/shortSet.js',
-    fileNewTokens = 'testData/sampleDataNewTokens.js';
+    fileNewTokens = 'testData/sampleDataNewTokens.js',
+    fileUndefVar = 'testData/gistfile1.js'
 var TIME = 20000;
 
 describe('==== test zest runner ====', function () {
@@ -122,6 +123,27 @@ describe('==== test zest runner ====', function () {
       r[2].print.should.be.exactly('hi b');
       r[6].print.should.be.exactly('hi d');
       r[7].print.should.be.exactly('yo');
+      done();
+    })
+    .catch(function (err) {
+      done(err);
+    });
+  });
+
+  it('should run script with undefined variabls', function (done) {
+    this.timeout(TIME);
+    opts.file = fileUndefVar;
+    zestRunner = new ZestRunner(opts);
+    zestRunner.run()
+    .then(function (r) {
+      console.log(r);
+      r[0].print.should.be.exactly('Its HTTPS lets test it!');
+      r[1].should.have.properties({
+        result: false,
+        print: 'HTTPS Response with no STS header',
+        priority: 'MEDIUM',
+        type: 'ZestActionFail'
+      });
       done();
     })
     .catch(function (err) {

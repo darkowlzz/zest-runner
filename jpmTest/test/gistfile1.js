@@ -38,7 +38,7 @@ exports.sampleZest = {
         {
           "message": "Its HTTPS lets test it!",
           "index": 1,
-          "enabled": false,
+          "enabled": true,
           "elementType": "ZestActionPrint"
         },
         {
@@ -59,7 +59,7 @@ exports.sampleZest = {
             {
               "message": "STS header - so far so good",
               "index": 4,
-              "enabled": false,
+              "enabled": true,
               "elementType": "ZestActionPrint"
             },
             {
@@ -114,7 +114,7 @@ exports.sampleZest = {
                 {
                   "message": "Not a 301 redirect - fail : {{response.header}}",
                   "index": 9,
-                  "enabled": false,
+                  "enabled": true,
                   "elementType": "ZestActionPrint"
                 },
                 {

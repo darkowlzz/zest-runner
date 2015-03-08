@@ -172,7 +172,8 @@ Runtime.prototype = {
     var parts = name.split('.');
     // iteratively fetch the required value
     parts.forEach(function (part) {
-      value = value[part];
+      // if variable not defined, return empty string
+      value = value[part] || '';
     });
     return value;
   },
@@ -426,387 +427,393 @@ Runtime.prototype = {
       }
     }
 
-    that.log('running statement: ', [stmt.index, stmt.elementType]);
-    switch (stmt.elementType) {
+    if (!! stmt.enabled) {
+      that.log('running statement: ', [stmt.index, stmt.elementType]);
+      switch (stmt.elementType) {
 
-      case 'ZestComment':
-        deferred.resolve({});
-        break;
-
-
-      case 'ZestRequest':
-        var startTime, stopTime, options;
-        that.globals.requestResult = true;
-        that.globals.resultMessage = '';
-
-        if (_.isEqual(that.config.platform, NODE)) {
-          /** node.js request **/
-          options = {
-            url: stmt.url,
-            headers: simpleHeaders.parse(stmt.headers) || '',
-            body: stmt.data || '',
-            method: stmt.method,
-            followRedirect: stmt.followRedirects
-          };
-          if (! _.isEmpty(stmt.cookies)) {
-            utils.appendCookies(stmt);
-            options.headers = simpleHeaders.parse(stmt.headers);
-          }
-          that.log('request options:', options);
-          that.globals.request = options;
-          // Start timer
-          startTime = new Date().getTime();
-          var r = request(options, function (error, response, body) {
-            if (!error) {
-              stopTime = new Date().getTime();
-              var opts = {
-                httpVersion: response.httpVersion,
-                statusCode: response.statusCode
-              };
-              that.globals.response = {
-                url: response.request.uri.href,
-                headers: simpleHeaders.stringify(response.headers, opts) || '',
-                body: body,
-                statusCode: response.statusCode,
-                responseTimeInMs: (stopTime - startTime)
-              };
-              that.log('response: ', that.globals.response);
-              // Evaluate the assertion stmts if any
-              processAsserts();
-              deferred.resolve(requestResult());
-            } else {
-              deferred.resolve('error in request');
-            }
-          });
-          /** end of node.js request **/
-        } else if (_.isEqual(that.config.platform, FX)) {
-          var fullHeaders = simpleHeaders.parse(stmt.headers) || '';
-          if (! _.isEmpty(stmt.cookies)) {
-            utils.appendCookies(stmt);
-            fullHeaders = simpleHeaders.parse(stmt.headers);
-          }
-          options = {
-            url: stmt.url,
-            headers: fullHeaders,
-            content: stmt.data || '',
-            onComplete: function (response) {
-              stopTime = new Date().getTime();
-              that.globals.response = {
-                url: that.globals.request.url,
-                headers: response.headers,
-                body: response.text,
-                statusCode: response.status,
-                responseTimeInMs: (stopTime - startTime)
-              };
-              that.log('response: ', that.globals.response);
-              // Evaluate the assertion stmts if any
-              processAsserts();
-              deferred.resolve(requestResult());
-            }
-          };
-          that.globals.request = {
-            url: options.url,
-            headers: options.headers,
-            body: options.content,
-            method: options.method,
-            followRedirect: true
-          };
-          // Create request
-          var aReq = request(options);
-          // Make request
-          switch (stmt.method) {
-            case 'GET':
-              aReq.get();
-              break;
-            case 'POST':
-              aReq.post();
-              break;
-            case 'PUT':
-              aReq.put();
-              break;
-            case 'HEAD':
-              aReq.head();
-              break;
-            case 'DELETE':
-              aReq.delete();
-              break;
-            default:
-              console.log('Unknown request method');
-              return;
-          }
-          // Start timer
-          startTime = new Date().getTime();
-        }
-        break;
-
-
-      case 'ZestConditional':
-        // Evaluate the conditional expression and run appropriate block
-        if (that.evalExpression(stmt.rootExpression).result) {
-          that._runBlock(stmt.ifStatements)
-          .then(function (r) {
-            deferred.resolve(r);
-          });
-        } else {
-          that._runBlock(stmt.elseStatements)
-          .then(function (r) {
-            deferred.resolve(r);
-          });
-        }
-        break;
-
-
-      case 'ZestAssignString':
-        // Assign value to variable
-        that.globals[stmt.variableName] = stmt.string;
-        deferred.resolve({});
-        break;
-
-
-      case 'ZestAssignRandomInteger':
-        // Assign a random number
-        that.globals[stmt.variableName] = 
-          (rand.intBetween(stmt.minInt, stmt.maxInt)).toString();
-        deferred.resolve({});
-        break;
-
-
-      case 'ZestAssignFieldValue':
-        // Assign form field value to variable
-        that._getDefinition(stmt.fieldDefinition)
-        .then(function (value) {
-          that.globals[stmt.variableName] = value;
+        case 'ZestComment':
           deferred.resolve({});
-        });
-        break;
+          break;
 
 
-      case 'ZestAssignReplace':
-        // Find and replace pattern in variable
-        if (stmt.regex) {
-          that.log('pattern:', stmt.replace);
-          reg = that.cleanRegex(stmt.replace);
-          that.log('cleaned pattern:', reg);
-          re = new RegExp(reg, 'g');
-        } else {
-          re = new RegExp(stmt.replace, 'g');
-        }
-        that.globals[stmt.variableName] =
-          that._getValue(stmt.variableName).replace(re, stmt.replacement);
-        deferred.resolve({});
-        break;
+        case 'ZestRequest':
+          var startTime, stopTime, options;
+          that.globals.requestResult = true;
+          that.globals.resultMessage = '';
 
-
-      case 'ZestAssignStringDelimiters':
-        // Assign location content within prefix and postfix to variable.
-        if (stmt.location === 'HEAD') {
-          location = 'response.headers';
-        } else if (stmt.location === 'BODY') {
-          location = 'response.body';
-        }
-        that.log('location:', location);
-        subject = that._getValue(location);
-        start = subject.indexOf(stmt.prefix) + stmt.prefix.length;
-        end = subject.indexOf(stmt.postfix);
-        that.globals[stmt.variableName] = subject.slice(start, end);
-        that.log('String:', that.globals[stmt.variableName]);
-        deferred.resolve({});
-        break;
-
-
-      case 'ZestAssignRegexDelimiters':
-        // Assign location content within prefix and postfix regex to variable.
-        if (stmt.location === 'HEAD') {
-          location = 'response.headers';
-        } else if (stmt.location === 'BODY') {
-          location = 'response.body';
-        }
-        that.log('location:', location);
-        subject = that._getValue(location);
-        var prefixReg = that.cleanRegex(stmt.prefix);
-        var startRegex = new RegExp(prefixReg);
-        var postfixReg = that.cleanRegex(stmt.postfix);
-        var endRegex = new RegExp(postfixReg);
-        var word = subject.match(startRegex)[0];
-        start = subject.search(startRegex) + word.length;
-        end = subject.search(endRegex);
-        that.globals[stmt.variableName] = subject.slice(start, end);
-        that.log('String:', that.globals[stmt.variableName]);
-        deferred.resolve({});
-        break;
-
-
-      case 'ZestLoopString':
-        // Loop through the given set of string tokens, assigning the token
-        // value to the given variable.
-        tokens = stmt.set.tokens;
-        loopVar = stmt.variableName;
-        count = 0;
-        loopResult = [];
-        loop = new LoopNext();
-        loop.syncLoop(tokens.length, function (l) {
-          that.globals[loopVar] = tokens[count];
-          that._runBlock(stmt.statements)
-          .then(function (r) {
-            loopResult.push(r);
-            count++;
-            if (count === stmt.set.tokens.length) {
-              deferred.resolve(loopResult);
-            }
-            l.next();
-          });
-        });
-        break;
-
-
-      case 'ZestLoopFile':
-        // Loop through file content line-by-line, assigning the line content
-        // to the given variable.
-        loopResult = [];
-        loop = new LoopNext();
-        count = 0;
-        var fileData, values;
-        try {
           if (_.isEqual(that.config.platform, NODE)) {
-            var fs = require('fs');
-            fileData = fs.readFileSync(stmt.set.pathToFile, 'utf8');
-            values = fileData.split('\n');
+            /** node.js request **/
+            options = {
+              url: stmt.url,
+              headers: simpleHeaders.parse(stmt.headers) || '',
+              body: stmt.data || '',
+              method: stmt.method,
+              followRedirect: stmt.followRedirects
+            };
+            if (! _.isEmpty(stmt.cookies)) {
+              utils.appendCookies(stmt);
+              options.headers = simpleHeaders.parse(stmt.headers);
+            }
+            that.log('request options:', options);
+            that.globals.request = options;
+            // Start timer
+            startTime = new Date().getTime();
+            var r = request(options, function (error, response, body) {
+              if (!error) {
+                stopTime = new Date().getTime();
+                var opts = {
+                  httpVersion: response.httpVersion,
+                  statusCode: response.statusCode
+                };
+                that.globals.response = {
+                  url: response.request.uri.href,
+                  headers: simpleHeaders.stringify(response.headers, opts) || '',
+                  body: body,
+                  statusCode: response.statusCode,
+                  responseTimeInMs: (stopTime - startTime)
+                };
+                that.log('response: ', that.globals.response);
+                // Evaluate the assertion stmts if any
+                processAsserts();
+                deferred.resolve(requestResult());
+              } else {
+                deferred.resolve('error in request');
+              }
+            });
+            /** end of node.js request **/
           } else if (_.isEqual(that.config.platform, FX)) {
-            var read = require('sdk/io/file').read;
-            fileData = read(stmt.set.pathToFile);
-            values = fileData.split('\n');
+            var fullHeaders = simpleHeaders.parse(stmt.headers) || '';
+            if (! _.isEmpty(stmt.cookies)) {
+              utils.appendCookies(stmt);
+              fullHeaders = simpleHeaders.parse(stmt.headers);
+            }
+            options = {
+              url: stmt.url,
+              headers: fullHeaders,
+              content: stmt.data || '',
+              onComplete: function (response) {
+                stopTime = new Date().getTime();
+                that.globals.response = {
+                  url: that.globals.request.url,
+                  headers: response.headers,
+                  body: response.text,
+                  statusCode: response.status,
+                  responseTimeInMs: (stopTime - startTime)
+                };
+                that.log('response: ', that.globals.response);
+                // Evaluate the assertion stmts if any
+                processAsserts();
+                deferred.resolve(requestResult());
+              }
+            };
+            that.globals.request = {
+              url: options.url,
+              headers: options.headers,
+              body: options.content,
+              method: options.method,
+              followRedirect: true
+            };
+            // Create request
+            var aReq = request(options);
+            // Make request
+            switch (stmt.method) {
+              case 'GET':
+                aReq.get();
+                break;
+              case 'POST':
+                aReq.post();
+                break;
+              case 'PUT':
+                aReq.put();
+                break;
+              case 'HEAD':
+                aReq.head();
+                break;
+              case 'DELETE':
+                aReq.delete();
+                break;
+              default:
+                console.log('Unknown request method');
+                return;
+            }
+            // Start timer
+            startTime = new Date().getTime();
           }
-          loop.syncLoop(values.length, function (l) {
-            that.globals[stmt.variableName] = values[count];
+          break;
+
+
+        case 'ZestConditional':
+          // Evaluate the conditional expression and run appropriate block
+          if (that.evalExpression(stmt.rootExpression).result) {
+            that._runBlock(stmt.ifStatements)
+            .then(function (r) {
+              deferred.resolve(r);
+            });
+          } else {
+            that._runBlock(stmt.elseStatements)
+            .then(function (r) {
+              deferred.resolve(r);
+            });
+          }
+          break;
+
+
+        case 'ZestAssignString':
+          // Assign value to variable
+          that.globals[stmt.variableName] = stmt.string;
+          deferred.resolve({});
+          break;
+
+
+        case 'ZestAssignRandomInteger':
+          // Assign a random number
+          that.globals[stmt.variableName] = 
+            (rand.intBetween(stmt.minInt, stmt.maxInt)).toString();
+          deferred.resolve({});
+          break;
+
+
+        case 'ZestAssignFieldValue':
+          // Assign form field value to variable
+          that._getDefinition(stmt.fieldDefinition)
+          .then(function (value) {
+            that.globals[stmt.variableName] = value;
+            deferred.resolve({});
+          });
+          break;
+
+
+        case 'ZestAssignReplace':
+          // Find and replace pattern in variable
+          if (stmt.regex) {
+            that.log('pattern:', stmt.replace);
+            reg = that.cleanRegex(stmt.replace);
+            that.log('cleaned pattern:', reg);
+            re = new RegExp(reg, 'g');
+          } else {
+            re = new RegExp(stmt.replace, 'g');
+          }
+          that.globals[stmt.variableName] =
+            that._getValue(stmt.variableName).replace(re, stmt.replacement);
+          deferred.resolve({});
+          break;
+
+
+        case 'ZestAssignStringDelimiters':
+          // Assign location content within prefix and postfix to variable.
+          if (stmt.location === 'HEAD') {
+            location = 'response.headers';
+          } else if (stmt.location === 'BODY') {
+            location = 'response.body';
+          }
+          that.log('location:', location);
+          subject = that._getValue(location);
+          start = subject.indexOf(stmt.prefix) + stmt.prefix.length;
+          end = subject.indexOf(stmt.postfix);
+          that.globals[stmt.variableName] = subject.slice(start, end);
+          that.log('String:', that.globals[stmt.variableName]);
+          deferred.resolve({});
+          break;
+
+
+        case 'ZestAssignRegexDelimiters':
+          // Assign location content within prefix and postfix regex to variable.
+          if (stmt.location === 'HEAD') {
+            location = 'response.headers';
+          } else if (stmt.location === 'BODY') {
+            location = 'response.body';
+          }
+          that.log('location:', location);
+          subject = that._getValue(location);
+          var prefixReg = that.cleanRegex(stmt.prefix);
+          var startRegex = new RegExp(prefixReg);
+          var postfixReg = that.cleanRegex(stmt.postfix);
+          var endRegex = new RegExp(postfixReg);
+          var word = subject.match(startRegex)[0];
+          start = subject.search(startRegex) + word.length;
+          end = subject.search(endRegex);
+          that.globals[stmt.variableName] = subject.slice(start, end);
+          that.log('String:', that.globals[stmt.variableName]);
+          deferred.resolve({});
+          break;
+
+
+        case 'ZestLoopString':
+          // Loop through the given set of string tokens, assigning the token
+          // value to the given variable.
+          tokens = stmt.set.tokens;
+          loopVar = stmt.variableName;
+          count = 0;
+          loopResult = [];
+          loop = new LoopNext();
+          loop.syncLoop(tokens.length, function (l) {
+            that.globals[loopVar] = tokens[count];
             that._runBlock(stmt.statements)
             .then(function (r) {
               loopResult.push(r);
               count++;
-              if (count === values.length) {
+              if (count === stmt.set.tokens.length) {
                 deferred.resolve(loopResult);
               }
               l.next();
             });
           });
-        } catch (e) {}
-        break;
+          break;
 
 
-      case 'ZestLoopInteger':
-        // Loop through the given range of integers, assigning the integer
-        // value to the given variable.
-        loopVar = stmt.variableName;
-        for (var i = stmt.set.start; i < stmt.set.end; i += stmt.set.step) {
-          that.globals[loopVar] = i;
-          for (var j = 0; j < stmt.statements.length; j++) {
-            that.run(stmt.statements[j]);
-          }
-        }
-        deferred.resolve({});
-        break;
-
-
-      case 'ZestLoopClientElements':
-        // Need to be implemented.
-        deferred.resolve({});
-        break;
-
-
-      case 'ZestLoopRegex':
-        // Loop through the elements matching the given regex.
-        loopVar = stmt.variableName;
-        var reg = that.cleanRegex(stmt.set.regex);
-        re = new RegExp(reg, 'g');
-        tokens = that._getValue(stmt.set.inputVariableName).match(re);
-        count = 0;
-        loopResult = [];
-        loop = new LoopNext();
-        loop.syncLoop(tokens.length, function (l) {
-          that.globals[loopVar] = tokens[count];
-          that._runBlock(stmt.statements)
-          .then(function (r) {
-            loopResult.push(r);
-            count++;
-            if (count === tokens.length) {
-              deferred.resolve(loopResult);
+        case 'ZestLoopFile':
+          // Loop through file content line-by-line, assigning the line content
+          // to the given variable.
+          loopResult = [];
+          loop = new LoopNext();
+          count = 0;
+          var fileData, values;
+          try {
+            if (_.isEqual(that.config.platform, NODE)) {
+              var fs = require('fs');
+              fileData = fs.readFileSync(stmt.set.pathToFile, 'utf8');
+              values = fileData.split('\n');
+            } else if (_.isEqual(that.config.platform, FX)) {
+              var read = require('sdk/io/file').read;
+              fileData = read(stmt.set.pathToFile);
+              values = fileData.split('\n');
             }
-            l.next();
+            loop.syncLoop(values.length, function (l) {
+              that.globals[stmt.variableName] = values[count];
+              that._runBlock(stmt.statements)
+              .then(function (r) {
+                loopResult.push(r);
+                count++;
+                if (count === values.length) {
+                  deferred.resolve(loopResult);
+                }
+                l.next();
+              });
+            });
+          } catch (e) {}
+          break;
+
+
+        case 'ZestLoopInteger':
+          // Loop through the given range of integers, assigning the integer
+          // value to the given variable.
+          loopVar = stmt.variableName;
+          for (var i = stmt.set.start; i < stmt.set.end; i += stmt.set.step) {
+            that.globals[loopVar] = i;
+            for (var j = 0; j < stmt.statements.length; j++) {
+              that.run(stmt.statements[j]);
+            }
+          }
+          deferred.resolve({});
+          break;
+
+
+        case 'ZestLoopClientElements':
+          // Need to be implemented.
+          deferred.resolve({});
+          break;
+
+
+        case 'ZestLoopRegex':
+          // Loop through the elements matching the given regex.
+          loopVar = stmt.variableName;
+          var reg = that.cleanRegex(stmt.set.regex);
+          re = new RegExp(reg, 'g');
+          tokens = that._getValue(stmt.set.inputVariableName).match(re);
+          count = 0;
+          loopResult = [];
+          loop = new LoopNext();
+          loop.syncLoop(tokens.length, function (l) {
+            that.globals[loopVar] = tokens[count];
+            that._runBlock(stmt.statements)
+            .then(function (r) {
+              loopResult.push(r);
+              count++;
+              if (count === tokens.length) {
+                deferred.resolve(loopResult);
+              }
+              l.next();
+            });
           });
-        });
-        break;
+          break;
 
 
-      case 'ZestActionPrint':
-        // Print message, replacing any variable's value if exists.
-        message = that._findAndReplace(stmt.message);
-        that.log('print:', message);
-        deferred.resolve({ print: message,
-                           type: stmt.elementType });
-        break;
+        case 'ZestActionPrint':
+          // Print message, replacing any variable's value if exists.
+          message = that._findAndReplace(stmt.message);
+          that.log('print:', message);
+          deferred.resolve({ print: message,
+                             type: stmt.elementType });
+          break;
 
 
-      case 'ZestActionSleep':
-        // Suspend the script execution for some duration.
-        if (_.isEqual(that.config.platform, NODE)) {
-          setTimeout(function () {
-            deferred.resolve({});
-          }, stmt.milliseconds);
-        } else if (_.isEqual(that.config.platform, FX)) {
-          _setTimeout(function () {
-            deferred.resolve({});
-          }, stmt.milliseconds);
-        }
-        break;
+        case 'ZestActionSleep':
+          // Suspend the script execution for some duration.
+          if (_.isEqual(that.config.platform, NODE)) {
+            setTimeout(function () {
+              deferred.resolve({});
+            }, stmt.milliseconds);
+          } else if (_.isEqual(that.config.platform, FX)) {
+            _setTimeout(function () {
+              deferred.resolve({});
+            }, stmt.milliseconds);
+          }
+          break;
 
 
-      case 'ZestActionFail':
-        // Print failure message and stop script execution.
-        message = that._findAndReplace(stmt.message);
-        that.log('Failed:', message);
-        deferred.resolve({ result: false,
-                           print: message,
-                           priority: stmt.priority,
-                           type: stmt.elementType });
-        break;
+        case 'ZestActionFail':
+          // Print failure message and stop script execution.
+          message = that._findAndReplace(stmt.message);
+          that.log('Failed:', message);
+          deferred.resolve({ result: false,
+                             print: message,
+                             priority: stmt.priority,
+                             type: stmt.elementType });
+          break;
 
 
-      case 'ZestAssignCalc':
-        // Perform arithmetic operations on the variables.
-        var oprndA, oprndB;
-        if (typeof(stmt.operandA) === 'number') {
-          oprndA = stmt.operandA;
-        } else {
-          oprndA = parseFloat(that._getValue(stmt.operandA));
-        }
+        case 'ZestAssignCalc':
+          // Perform arithmetic operations on the variables.
+          var oprndA, oprndB;
+          if (typeof(stmt.operandA) === 'number') {
+            oprndA = stmt.operandA;
+          } else {
+            oprndA = parseFloat(that._getValue(stmt.operandA));
+          }
 
-        if (typeof(stmt.operandB) === 'number') {
-          oprndB = stmt.operandB;
-        } else {
-          oprndB = parseFloat(that._getValue(stmt.operandB));
-        }
+          if (typeof(stmt.operandB) === 'number') {
+            oprndB = stmt.operandB;
+          } else {
+            oprndB = parseFloat(that._getValue(stmt.operandB));
+          }
 
-        switch (stmt.operation) {
-          case 'add':
-            that.globals[stmt.variableName] = (oprndA + oprndB).toString();
-            break;
-          case 'subtract':
-            that.globals[stmt.variableName] = (oprndA - oprndB).toString();
-            break;
-          case 'multiply':
-            that.globals[stmt.variableName] = (oprndA * oprndB).toString();
-            break;
-          case 'divide':
-            that.globals[stmt.variableName] = (oprndA / oprndB).toString();
-            break;
-          default:
-            console.log('unknown operation');
-        }
-        deferred.resolve({});
-        break;
+          switch (stmt.operation) {
+            case 'add':
+              that.globals[stmt.variableName] = (oprndA + oprndB).toString();
+              break;
+            case 'subtract':
+              that.globals[stmt.variableName] = (oprndA - oprndB).toString();
+              break;
+            case 'multiply':
+              that.globals[stmt.variableName] = (oprndA * oprndB).toString();
+              break;
+            case 'divide':
+              that.globals[stmt.variableName] = (oprndA / oprndB).toString();
+              break;
+            default:
+              console.log('unknown operation');
+          }
+          deferred.resolve({});
+          break;
 
 
-      default:
-        throw 'Unknown statement';
+        default:
+          throw 'Unknown statement';
+      }
+    }
+    else {
+      that.log('disabled statement', [stmt.index, stmt.elementType]);
+      deferred.resolve({});
     }
     return deferred.promise;
   },

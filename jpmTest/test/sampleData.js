@@ -256,6 +256,7 @@ exports.sampleZest = {
       "followRedirects": true,
       "cookies": [],
       "index": 27,
+      "enabled": true,
       "elementType": "ZestRequest"
     },
     {
@@ -277,6 +278,7 @@ exports.sampleZest = {
       "followRedirects": true,
       "cookies": [],
       "index": 28,
+      "enabled": true,
       "elementType": "ZestRequest"
     },
     {
@@ -308,6 +310,7 @@ exports.sampleZest = {
       "followRedirects": true,
       "cookies": [],
       "index": 29,
+      "enabled": true,
       "elementType": "ZestRequest"
     },
     {
