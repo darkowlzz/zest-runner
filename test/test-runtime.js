@@ -408,6 +408,7 @@ describe('==== test zest runtime ====', function () {
       this.timeout(TIME);
       runtime.run(zc.getStatement(42))
       .then(function (r) {
+        r.length.should.be.exactly(10);
         r[0][0].print.should.be.exactly('Attacking with 0');
         r[1][0].print.should.be.exactly('Attacking with 1');
         r[2][0].print.should.be.exactly('Attacking with 2');

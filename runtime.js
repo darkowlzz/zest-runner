@@ -682,13 +682,13 @@ Runtime.prototype = {
               fileData = read(stmt.set.pathToFile);
               values = fileData.split('\n');
             }
-            loop.syncLoop(values.length, function (l) {
+            loop.syncLoop(values.length - 1, function (l) {
               that.globals[stmt.variableName] = values[count];
               that._runBlock(stmt.statements)
               .then(function (r) {
                 loopResult.push(r);
                 count++;
-                if (count === values.length) {
+                if (count === values.length - 1) {
                   deferred.resolve(loopResult);
                 }
                 l.next();
