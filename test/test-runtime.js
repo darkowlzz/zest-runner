@@ -7,7 +7,7 @@ var ZestCreator = require('zest-creator'),
 var TIME = 9000;
 
 describe('==== test zest runtime ====', function () {
-  var zc = new ZestCreator({file: 'testData/sampleDataSet.js',
+  var zc = new ZestCreator({file: 'testData/sampleDataSet.zst',
                             debug: true});
   var runtime = new Runtime({debug: true});
   runtime.setDefinition('tokenStart', '{{');

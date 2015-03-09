@@ -16,12 +16,13 @@ var DEBUG = true;
  * Zest Runner.
  * @param {object} opts
  *   Options for setting up zestrunner.
- *   Available options are sourceType, file, zest, debug.
+ *   Available options are sourceType, file, zest, debug, tokens.
  *   Example:
  *   opts = {
  *     sourceType: 'file',
  *     file: 'path/to/zestfile',
- *     debug: true
+ *     debug: true,
+ *     tokens: {}
  *   }
  */
 function ZestRunner (opts) {
@@ -76,18 +77,24 @@ ZestRunner.prototype = {
 
 
   // Initialize all the tokens values.
-  _initializeTokens: function () {
+  _initializeTokens: function (argTokens) {
     var that = this,
-        tokens = that.script.parameters.tokens,
-        tokenStart = that.script.parameters.tokenStart,
-        tokenEnd = that.script.parameters.tokenEnd;
+        tokens, tokenStart, tokenEnd;
 
-    if ((! _.isUndefined(tokenStart)) && (! _.isEmpty(tokenStart)) &&
-        (! _.isUndefined(tokenEnd)) && (! _.isEmpty(tokenEnd))) {
-      that.runtime.setDefinition('tokenStart', tokenStart);
-      that.log('tokenStart:', tokenStart);
-      that.runtime.setDefinition('tokenEnd', tokenEnd);
-      that.log('tokenEnd:', tokenEnd);
+    if (_.isUndefined(argTokens)) {
+      tokens = that.script.parameters.tokens,
+      tokenStart = that.script.parameters.tokenStart,
+      tokenEnd = that.script.parameters.tokenEnd;
+
+      if ((! _.isUndefined(tokenStart)) && (! _.isEmpty(tokenStart)) &&
+          (! _.isUndefined(tokenEnd)) && (! _.isEmpty(tokenEnd))) {
+        that.runtime.setDefinition('tokenStart', tokenStart);
+        that.log('tokenStart:', tokenStart);
+        that.runtime.setDefinition('tokenEnd', tokenEnd);
+        that.log('tokenEnd:', tokenEnd);
+      }
+    } else {
+      tokens = argTokens;
     }
 
     if ((! _.isUndefined(tokens)) && (! _.isEmpty(tokens))) {
@@ -108,7 +115,12 @@ ZestRunner.prototype = {
     that.reset();
     var results = [];
     var deferred = defer();
+    // initialize script tokens.
     that._initializeTokens();
+    // initialize argument tokens.
+    if (! _.isUndefined(that.config.tokens)) {
+      this._initializeTokens(that.config.tokens);
+    }
     var runStatus = true;
     loop.syncLoop(that.script.statements.length, function (l) {
       that.runtime.run(that.script.statements[that.count])

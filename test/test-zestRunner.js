@@ -5,11 +5,12 @@ var ZestRunner = require('../'),
     objData    = require('../testData/sampleObjDataSet').sampleZest;
 
 
-var fileWithFail = 'testData/dataSetFail.js',
-    fileFull = 'testData/sampleDataSet.js',
-    fileShort = 'testData/shortSet.js',
-    fileNewTokens = 'testData/sampleDataNewTokens.js',
-    fileUndefVar = 'testData/gistfile1.js'
+var fileWithFail = 'testData/dataSetFail.zst',
+    fileFull = 'testData/sampleDataSet.zst',
+    fileShort = 'testData/shortSet.zst',
+    fileNewTokens = 'testData/sampleDataNewTokens.zst',
+    fileUndefVar = 'testData/gistfile1.zst',
+    fileArgTokens = 'testData/argTokens.zst';
 var TIME = 20000;
 
 describe('==== test zest runner ====', function () {
@@ -150,4 +151,41 @@ describe('==== test zest runner ====', function () {
       done(err);
     });
   });
+
+  it('should run script with missing tokens', function (done) {
+    this.timeout(TIME);
+    opts.file = fileArgTokens;
+    zestRunner = new ZestRunner(opts);
+    zestRunner.run()
+    .then(function (r) {
+      console.log(r);
+      r[0].print.should.be.exactly('Hello World {{request.url}}');
+      r[1].print.should.be.exactly('Hello World {{request.method}}');
+      done();
+    })
+    .catch(function (err) {
+      done(err);
+    });
+  });
+
+  it('should run script with arg tokens', function (done) {
+    this.timeout(TIME);
+    opts.file = fileArgTokens;
+    opts.tokens = {
+      'request.url': 'http://foo.com',
+      'request.method': 'GET'
+    };
+    zestRunner = new ZestRunner(opts);
+    zestRunner.run()
+    .then(function (r) {
+      console.log(r);
+      r[0].print.should.be.exactly('Hello World http://foo.com');
+      r[1].print.should.be.exactly('Hello World GET');
+      done();
+    })
+    .catch(function (err) {
+      done(err);
+    });
+  });
+
 });
