@@ -85,9 +85,9 @@ ZestRunner.prototype = {
     if ((! _.isUndefined(tokenStart)) && (! _.isEmpty(tokenStart)) &&
         (! _.isUndefined(tokenEnd)) && (! _.isEmpty(tokenEnd))) {
       that.runtime.setDefinition('tokenStart', tokenStart);
-      console.log('tokenStart:', tokenStart);
+      that.log('tokenStart:', tokenStart);
       that.runtime.setDefinition('tokenEnd', tokenEnd);
-      console.log('tokenEnd:', tokenEnd);
+      that.log('tokenEnd:', tokenEnd);
     }
 
     if ((! _.isUndefined(tokens)) && (! _.isEmpty(tokens))) {
