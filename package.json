@@ -1,6 +1,6 @@
 {
   "name": "zest-runner",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "description": "A runtime for Zest scripts.",
   "main": "zestRunner.js",
   "repository": {
@@ -12,6 +12,11 @@
     "test-prepare": "cp jpmTest/test/fuzzerBase10 ~/; rsync -av --progress ./ jpmTest/zest/ --exclude jpmTest/",
     "test-jpm": "cd jpmTest/; jpm test; rm -rf zest"
   },
+  "keywords": [
+    "zest",
+    "zest-runner",
+    "mozilla zest"
+  ],
   "author": "Sunny <indiasuny000@gmail.com> (darkowlzz)",
   "license": "MPL",
   "dependencies": {
