@@ -38,7 +38,9 @@ function Runtime (opts) {
       request = require('sdk/request').Request;
       _setTimeout = require('sdk/timers').setTimeout;
     }
-  } catch (e) {}
+  } catch (e) {
+    console.log(e);
+  }
 
   // Create an empty global scope for the runtime.
   this.globals = {};
@@ -694,7 +696,9 @@ Runtime.prototype = {
                 l.next();
               });
             });
-          } catch (e) {}
+          } catch (e) {
+            console.log(e);
+          }
           break;
 
 
