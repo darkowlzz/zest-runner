@@ -102,7 +102,11 @@ Runtime.prototype = {
     var message = msg.replace(re,
       function (matchWord) {
         var variables = matchWord.match(/(\w+\.*\w*)/g);
-        return that._getValue(variables[0]);
+        if (_.isEmpty(that._getValue(variables[0]))) {
+          return matchWord;
+        } else {
+          return that._getValue(variables[0]);
+        }
       }
     );
     return message;
