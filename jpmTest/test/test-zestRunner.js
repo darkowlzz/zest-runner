@@ -3,20 +3,23 @@ var main = require("../"),
     sampleZest = require('./sampleData').sampleZest,
     ZestRunner = require('../zest/zestRunner');
 
-var zc = new ZestCreator({debug: true}, sampleZest);
+//var zc = new ZestCreator({debug: true}, sampleZest);
 var zr = new ZestRunner({platform: 'firefox',
                          sourceType: 'object',
-                         zest: zc});
+                         zest: sampleZest});
 //var runtime = new Runtime({debug: true, platform: 'firefox'});
 
 exports["test A - run in runner"] = function (assert, done) {
-  zr.runNext()
-  .then(function () {
-    return zr.runNext();
-  })
-  .then(function () {
+  zr.run()
+  .then(function (r) {
     console.log('RUN completed');
-    assert.ok(true);
+    console.log(JSON.stringify(r, null, 2));
+    assert.equal(r[0].print, 'hi a', 'Is the print right');
+    assert.equal(r[1].print, 'yo', 'Is the print right');
+    assert.equal(r[2].print, 'hi b', 'Is the print right');
+    assert.equal(r[8].result, true, 'Is the result true');
+    assert.equal(r[9].result, false, 'Is the result false');
+    assert.equal(r[26].print, 'Attacking with 9', 'Is the print right');
     done();
   })
   .catch(function (err) {
