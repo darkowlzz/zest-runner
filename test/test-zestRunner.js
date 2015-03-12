@@ -78,41 +78,6 @@ describe('==== test zest runner ====', function () {
     });
   });
 
-  it('should run one at a time', function (done) {
-    this.timeout(TIME);
-    opts.file = fileShort;
-    zestRunner = new ZestRunner(opts);
-    zestRunner.runNext()
-    .then(function (r) {
-      return zestRunner.runNext();
-    })
-    .then(function (r) {
-      zestRunner.runtime.globals.var1.should.be.exactly('apple');
-      return zestRunner.runNext();
-    })
-    .then(function (r) {
-      zestRunner.count.should.be.exactly(3);
-      return zestRunner.runNext();
-    })
-
-    .then(function (r) {
-      return zestRunner.runNext();
-    })
-    .then(function (r) {
-      return zestRunner.runNext();
-    })
-
-    .then(function (r) {
-      zestRunner.count.should.be.exactly(5);
-      zestRunner.reset();
-      zestRunner.count.should.be.exactly(0);
-      done();
-    })
-    .catch(function (err) {
-      done(err);
-    });
-  });
-
   it('should run with new token start/end', function (done) {
     this.timeout(TIME);
     opts.file = fileNewTokens;

@@ -166,30 +166,6 @@ ZestRunner.prototype = {
   },
 
 
-  // Run the script one statement at a time.
-  // NEED TO BE FIXED - INCOMPLETE
-  runNext: function () {
-    var deferred = defer();
-    var that = this;
-    if (that.count >= that.script.statements.length) {
-      console.log('Nothing to run');
-      deferred.resolve('STOP');
-    } else {
-      that.runtime.run(that.script.statements[that.count])
-      .then(function (r) {
-        if (r[0] === 'fail') {
-          that.log('STOP', r);
-          deferred.resolve(r);
-        }
-        that.log('one statement executed', '');
-        that.count++;
-        deferred.resolve(r);
-      });
-    }
-    return deferred.promise;
-  },
-
-
   // Reset the statement run counter.
   reset: function () {
     this.count = 0;
