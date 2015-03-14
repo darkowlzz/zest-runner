@@ -339,9 +339,9 @@ Runtime.prototype = {
       case 'ZestExpressionEquals':
         // Compare the given value with variable value.
         expected = exp.value;
+        that.log('expected:', expected);
         actual = that._getValue(exp.variableName);
-        that.log('response.url:', that._getValue(exp.variableName));
-        that.log('value:', exp.value);
+        that.log('actual:', actual);
         if (! exp.caseExact) {
           expected = expected.toLowerCase();
           actual = actual.toLowerCase();
@@ -615,7 +615,9 @@ Runtime.prototype = {
           that.log('location:', location);
           subject = that._getValue(location);
           start = subject.indexOf(stmt.prefix) + stmt.prefix.length;
-          end = subject.indexOf(stmt.postfix);
+          that.log('starting at', start);
+          end = subject.indexOf(stmt.postfix, start);
+          that.log('ending at', end);
           that.globals[stmt.variableName] = subject.slice(start, end);
           that.log('String:', that.globals[stmt.variableName]);
           deferred.resolve({});
@@ -637,7 +639,10 @@ Runtime.prototype = {
           var endRegex = new RegExp(postfixReg);
           var word = subject.match(startRegex)[0];
           start = subject.search(startRegex) + word.length;
-          end = subject.search(endRegex);
+          that.log('starting at', start);
+          var temp = subject.slice(start);
+          end = temp.search(endRegex) + start;
+          that.log('ending at', end);
           that.globals[stmt.variableName] = subject.slice(start, end);
           that.log('String:', that.globals[stmt.variableName]);
           deferred.resolve({});
