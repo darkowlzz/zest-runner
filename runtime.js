@@ -104,10 +104,11 @@ Runtime.prototype = {
     var message = msg.replace(re,
       function (matchWord) {
         var variables = matchWord.match(/(\w+\.*\w*)/g);
-        if (_.isEmpty(that._getValue(variables[0]))) {
+        var varVal = that._getValue(variables[0]);
+        if (_.isEmpty(varVal) && (! _.isNumber(varVal))) {
           return matchWord;
         } else {
-          return that._getValue(variables[0]);
+          return varVal;
         }
       }
     );
@@ -179,7 +180,11 @@ Runtime.prototype = {
     // iteratively fetch the required value
     parts.forEach(function (part) {
       // if variable not defined, return empty string
-      value = value[part] || '';
+      if (value[part] == 0) {
+        value = value[part];
+      } else {
+        value = value[part] || '';
+      }
     });
     return value;
   },
@@ -567,6 +572,7 @@ Runtime.prototype = {
         case 'ZestAssignString':
           // Assign value to variable
           that.globals[stmt.variableName] = stmt.string;
+          that.trimWhitespace(stmt);
           deferred.resolve({});
           break;
 
@@ -620,6 +626,7 @@ Runtime.prototype = {
           that.log('ending at', end);
           that.globals[stmt.variableName] = subject.slice(start, end);
           that.log('String:', that.globals[stmt.variableName]);
+          that.trimWhitespace(stmt);
           deferred.resolve({});
           break;
 
@@ -645,6 +652,7 @@ Runtime.prototype = {
           that.log('ending at', end);
           that.globals[stmt.variableName] = subject.slice(start, end);
           that.log('String:', that.globals[stmt.variableName]);
+          that.trimWhitespace(stmt);
           deferred.resolve({});
           break;
 
@@ -711,13 +719,23 @@ Runtime.prototype = {
           // Loop through the given range of integers, assigning the integer
           // value to the given variable.
           loopVar = stmt.variableName;
-          for (var i = stmt.set.start; i < stmt.set.end; i += stmt.set.step) {
-            that.globals[loopVar] = i;
-            for (var j = 0; j < stmt.statements.length; j++) {
-              that.run(stmt.statements[j]);
-            }
-          }
-          deferred.resolve({});
+          loopResult = [];
+          loop = new LoopNext();
+          var varVal = stmt.set.start;
+          that.globals[loopVar] = varVal;
+          var iterations = (stmt.set.end - stmt.set.start) / stmt.set.step;
+          loop.syncLoop(iterations, function (l) {
+            that.globals[loopVar] = varVal;
+            that._runBlock(stmt.statements)
+            .then(function (r) {
+              loopResult.push(r);
+              varVal += stmt.set.step;
+              if (varVal == stmt.set.end) {
+                deferred.resolve(loopResult);
+              }
+              l.next();
+            });
+          });
           break;
 
 
@@ -848,5 +866,11 @@ Runtime.prototype = {
       regexp = regexp.slice(1, regexp.length - 1);
     }
     return regexp;
+  },
+
+  trimWhitespace: function (stmt) {
+    if (stmt.trimWhitespace) {
+      this.globals[stmt.variableName] = this.globals[stmt.variableName].trim();
+    }
   }
 };

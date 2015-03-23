@@ -510,6 +510,14 @@
       "index": 42,
       "enabled": true,
       "elementType": "ZestLoopFile"
+    },
+    {
+      "string": "   apple is tasty  ",
+      "variableName": "varN",
+      "trimWhitespace": true,
+      "index": 44,
+      "enabled": true,
+      "elementType": "ZestAssignString"
     }
   ],
   "authentication": [],

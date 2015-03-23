@@ -83,7 +83,6 @@ describe('==== test zest runtime ====', function () {
       .catch(function (err) {
         done(err);
       });
-      // FIXME: Test it
     });
 
     it('actionFail', function (done) {
@@ -120,8 +119,12 @@ describe('==== test zest runtime ====', function () {
         return runtime.run(zc.getStatement(9));
       })
       .then(function (r) {
+        r.length.should.be.exactly(4);
+        r[0][0].print.should.be.exactly('hi a');
+        r[1][0].print.should.be.exactly('hi b');
+        r[2][0].print.should.be.exactly('hi c');
+        r[3][0].print.should.be.exactly('hi d');
         r.forEach(function (ele) {
-          ele[0].print.should.be.a.String;
           ele[1].print.should.be.exactly('yo');
         });
         runtime.globals.m.should.be.exactly('8');
@@ -138,7 +141,14 @@ describe('==== test zest runtime ====', function () {
       this.timeout(TIME);
       runtime.globals.m.should.be.exactly('8');
       runtime.run(zc.getStatement(13))
-      .then(function () {
+      .then(function (r) {
+        console.log(r);
+        r.length.should.be.exactly(10);
+        r[0][0].print.should.be.exactly('zooo 0');
+        r[1][0].print.should.be.exactly('zooo 2');
+        r[0][0].print.should.be.exactly('zooo 0');
+        r[8][0].print.should.be.exactly('zooo 16');
+        r[9][0].print.should.be.exactly('zooo 18');
         runtime.globals.m.should.be.exactly('18');
         done();
       })
@@ -147,7 +157,6 @@ describe('==== test zest runtime ====', function () {
       });
     });
   });
-
 
   describe('run assignCalc', function () {
     it('should add', function (done) {
@@ -420,6 +429,20 @@ describe('==== test zest runtime ====', function () {
         r[8][0].print.should.be.exactly('Attacking with 8');
         r[9][0].print.should.be.exactly('Attacking with 9');
         r[0][0].type.should.be.exactly('ZestActionPrint');
+        done();
+      })
+      .catch(function (err) {
+        done(err);
+      });
+    });
+  });
+
+  describe('assign string with trimWhitespace', function () {
+    it('should trim string', function (done) {
+      this.timeout(TIME);
+      runtime.run(zc.getStatement(44))
+      .then(function (r) {
+        runtime._getValue('varN').should.be.exactly('apple is tasty');
         done();
       })
       .catch(function (err) {
