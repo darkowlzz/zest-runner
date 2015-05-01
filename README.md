@@ -62,7 +62,7 @@ zr.run().then(resultHandler);
 
 ## Tests
 
-To run the test locally, add firefox path in config.sh and run `npm test`.
+To run the tests locally, add firefox path in config.sh and run `npm test`.
 
 ## LICENSE
 

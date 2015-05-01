@@ -2,3 +2,4 @@ node_modules/
 *.swp
 .DS_Store
 jpmTest/zest/
+config.sh
