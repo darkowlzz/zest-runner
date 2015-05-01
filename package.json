@@ -10,7 +10,7 @@
   "scripts": {
     "test": "mocha && npm run test-prepare && npm run test-jpm",
     "test-prepare": "cp jpmTest/test/fuzzerBase10 ~/; rsync -av --progress ./ jpmTest/zest/ --exclude jpmTest/",
-    "test-jpm": "cd jpmTest/; jpm test; rm -rf zest"
+    "test-jpm": "source config.sh; cd jpmTest/; if [ -z $FIREFOX ]; then jpm test; else jpm test -b $FIREFOX; fi; rm -rf zest"
   },
   "keywords": [
     "zest",
