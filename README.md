@@ -60,6 +60,10 @@ var zr = new ZestRunner(opts);
 zr.run().then(resultHandler);
 ```
 
+## Tests
+
+To run the test locally, add firefox path in config.sh and run `npm test`.
+
 ## LICENSE
 
 MPL
