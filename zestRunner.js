@@ -9,6 +9,7 @@ var ZestCreator = require('zest-creator'),
 var Q, defer;
 var NODE = 'node',
     FX   = 'firefox';
+var debug = function () {};
 
 var DEBUG = true;
 
@@ -48,6 +49,7 @@ function ZestRunner (opts) {
   try {
     if (_.isEqual(this.config.platform, NODE)) {
       defer = require('q').defer;
+      debug = require('debug')('zestRunner');
     } 
     else if (_.isEqual(this.config.platform, FX)) {
       defer = require('sdk/core/promise').defer;
@@ -89,9 +91,9 @@ ZestRunner.prototype = {
       if ((! _.isUndefined(tokenStart)) && (! _.isEmpty(tokenStart)) &&
           (! _.isUndefined(tokenEnd)) && (! _.isEmpty(tokenEnd))) {
         that.runtime.setDefinition('tokenStart', tokenStart);
-        that.log('tokenStart:', tokenStart);
+        debug('tokenStart: %s', tokenStart);
         that.runtime.setDefinition('tokenEnd', tokenEnd);
-        that.log('tokenEnd:', tokenEnd);
+        debug('tokenEnd: %s', tokenEnd);
       }
     } else {
       tokens = argTokens;
@@ -145,7 +147,7 @@ ZestRunner.prototype = {
           });
         } else if (r.type === 'ZestActionFail') {
           that._addToResults(results, r);
-          that.log('STOP', r);
+          debug('STOP');
           runStatus = false;
           deferred.resolve(results);
         } else {
@@ -169,13 +171,6 @@ ZestRunner.prototype = {
   // Reset the statement run counter.
   reset: function () {
     this.count = 0;
-  },
-
-
-  // Print debug statements
-  log: function (message, args) {
-    if (this.config.debug) {
-      console.log('DEBUG:', message, args);
-    }
   }
+
 };
