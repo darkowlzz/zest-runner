@@ -9,6 +9,7 @@
   },
   "scripts": {
     "test": "mocha && npm run test-prepare && npm run test-jpm",
+    "test-debug": "DEBUG=zestRunner,runtime npm test",
     "test-prepare": "cp jpmTest/test/fuzzerBase10 ~/; rsync -av --progress ./ jpmTest/zest/ --exclude jpmTest/",
     "test-jpm": "source config.sh; cd jpmTest/; if [ -z $FIREFOX ]; then jpm test; else jpm test -b $FIREFOX; fi; rm -rf zest"
   },
@@ -20,6 +21,7 @@
   "author": "Sunny <indiasuny000@gmail.com> (darkowlzz)",
   "license": "MPL",
   "dependencies": {
+    "debug": "^2.1.3",
     "form-input-list": "git://github.com/darkowlzz/form-input-list.git",
     "json-easy-filter": "^0.3.0",
     "lodash": "^3.0.0",

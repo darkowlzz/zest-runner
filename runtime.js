@@ -9,6 +9,7 @@ var _             = require('lodash'),
 var Q, defer, formInput, request, _setTimeout;
 var NODE = 'node',
     FX   = 'firefox';
+var debug = function () {};
 
 
 /**
@@ -32,6 +33,7 @@ function Runtime (opts) {
       defer = require('q').defer;
       formInput = require('form-input-list').formInput;
       request = require('request');
+      debug = require('debug')('runtime');
     }
     else if (_.isEqual(this.config.platform, FX)) {
       defer = require('sdk/core/promise').defer;
@@ -79,13 +81,6 @@ Runtime.prototype = {
   // @return {boolean} - true if the script is passive, else false.
   isPassive: function () {
     return _.isEqual(this.config.type, 'Passive');
-  },
-
-  // Print debug statements
-  log: function (message, args) {
-    if (this.config.debug) {
-      console.log('DEBUG: ', message, args);
-    }
   },
 
 
@@ -240,8 +235,8 @@ Runtime.prototype = {
         // Compare expected and actual statusCode.
         expected = exp.code;
         actual = that.globals.response.statusCode;
-        that.log('expected statusCode: ', exp.code);
-        that.log('actual statusCode: ', that.globals.response.statusCode);
+        debug('expected statusCode: %s', exp.code);
+        debug('actual statusCode: %s', that.globals.response.statusCode);
         if (_.isEqual(expected, actual)) {
           result = { result: true };
         } else {
@@ -260,16 +255,16 @@ Runtime.prototype = {
         // Compare expected and actual length value.
         expected = exp.length;
         actual = that._getValue(exp.variableName).length;
-        that.log('actual ' + exp.variableName + '.length:',
-                  that._getValue(exp.variableName).length);
-        that.log('expected ' + exp.variableName + '.length',
-                  exp.length);
+        debug('actual ' + exp.variableName + '.length: ' +
+              that._getValue(exp.variableName).length);
+        debug('expected ' + exp.variableName + '.length' +
+              exp.length);
         var approx = exp.length * exp.approx / 100;
-        that.log('approx:', '+/- ' + approx);
+        debug('approx: +/- ' + approx);
         var upperLimit = exp.length + approx;
-        that.log('upperLimit:', upperLimit);
+        debug('upperLimit: %s', upperLimit);
         var lowerLimit = exp.length - approx;
-        that.log('lowerLimit:', lowerLimit);
+        debug('lowerLimit: %s', lowerLimit);
         if ((actual >= lowerLimit) && (actual <= upperLimit)) {
           result = { result: true };
         } else {
@@ -287,10 +282,10 @@ Runtime.prototype = {
 
       case 'ZestExpressionRegex':
         // Check if the regex match content of the given variable.
-        that.log('variableName:', exp.variableName);
-        that.log('regex:', exp.regex);
+        debug('variableName: %s', exp.variableName);
+        debug('regex: %s', exp.regex);
         var reg = that.cleanRegex(exp.regex);
-        that.log('cleaned regex:', reg);
+        debug('cleaned regex: %s', reg);
         var flags = 'g';
         if (! exp.caseExact) {
           flags += 'i';
@@ -313,14 +308,14 @@ Runtime.prototype = {
       case 'ZestExpressionURL':
         // Check if request url is in include regex and not in exculde regex.
         result = { result: false };
-        that.log('url:', that.globals.response.url);
-        that.log('includeRegexes:', exp.includeRegexes);
-        that.log('excludeRegexes:', exp.excludeRegexes);
+        debug('url: %s', that.globals.response.url);
+        debug('includeRegexes: %s', exp.includeRegexes);
+        debug('excludeRegexes: %s', exp.excludeRegexes);
         if (! _.isEmpty(exp.includeRegexes)) {
           exp.includeRegexes.some(function (pattern) {
-            that.log('pattern:', pattern);
+            debug('pattern: %s', pattern);
             pattern = that.cleanRegex(pattern);
-            that.log('cleaned pattern:', pattern);
+            debug('cleaned pattern: %s', pattern);
             if (that.isPatternFound(pattern, that.globals.response.url)) {
               result = { result: true };
               return true;
@@ -329,9 +324,9 @@ Runtime.prototype = {
         }
         if (! _.isEmpty(exp.excludeRegexes)) {
           exp.excludeRegexes.some(function (pattern) {
-            that.log('pattern:', pattern);
+            debug('pattern: %s', pattern);
             pattern = that.cleanRegex(pattern);
-            that.log('pattern:', pattern);
+            debug('pattern: %s', pattern);
             if (that.isPatternFound(pattern, that.globals.response.url)) {
               result = { result: false };
               return true;
@@ -344,9 +339,9 @@ Runtime.prototype = {
       case 'ZestExpressionEquals':
         // Compare the given value with variable value.
         expected = exp.value;
-        that.log('expected:', expected);
+        debug('expected: %s', expected);
         actual = that._getValue(exp.variableName);
-        that.log('actual:', actual);
+        debug('actual: %s', actual);
         if (! exp.caseExact) {
           expected = expected.toLowerCase();
           actual = actual.toLowerCase();
@@ -363,8 +358,8 @@ Runtime.prototype = {
         // Compare actual and expected response time.
         expected = exp.timeInMs;
         actual = that.globals.response.responseTimeInMs;
-        that.log('actual TimeInMs:', actual);
-        that.log('expected TimeInMs:', expected);
+        debug('actual TimeInMs: %s', actual);
+        debug('expected TimeInMs: %s', expected);
         if (exp.greaterThan) {
           result = { result: (actual > expected) };
         } else {
@@ -427,7 +422,7 @@ Runtime.prototype = {
       if (! _.isEmpty(stmt.assertions)) {
         var evalResult;
         stmt.assertions.some(function (exp) {
-          that.log('assertion expression:', exp.rootExpression.elementType);
+          debug('assertion expression: %s', exp.rootExpression.elementType);
           evalResult = that.evalExpression(exp.rootExpression);
           if (! evalResult.result) {
             that.globals.requestResult = false;
@@ -439,7 +434,7 @@ Runtime.prototype = {
     }
 
     if (!! stmt.enabled) {
-      that.log('running statement: ', [stmt.index, stmt.elementType]);
+      debug('running statement: %s', [stmt.index, stmt.elementType]);
       switch (stmt.elementType) {
 
         case 'ZestComment':
@@ -465,7 +460,7 @@ Runtime.prototype = {
               utils.appendCookies(stmt);
               options.headers = simpleHeaders.parse(stmt.headers);
             }
-            that.log('request options:', options);
+            debug('request options: %s', options);
             that.globals.request = options;
             // Start timer
             startTime = new Date().getTime();
@@ -483,7 +478,7 @@ Runtime.prototype = {
                   statusCode: response.statusCode,
                   responseTimeInMs: (stopTime - startTime)
                 };
-                that.log('response: ', that.globals.response);
+                debug('response: %s', that.globals.response);
                 // Evaluate the assertion stmts if any
                 processAsserts();
                 deferred.resolve(requestResult());
@@ -511,7 +506,7 @@ Runtime.prototype = {
                   statusCode: response.status,
                   responseTimeInMs: (stopTime - startTime)
                 };
-                that.log('response: ', that.globals.response);
+                debug('response: %s', that.globals.response);
                 // Evaluate the assertion stmts if any
                 processAsserts();
                 deferred.resolve(requestResult());
@@ -598,9 +593,9 @@ Runtime.prototype = {
         case 'ZestAssignReplace':
           // Find and replace pattern in variable
           if (stmt.regex) {
-            that.log('pattern:', stmt.replace);
+            debug('pattern: %s', stmt.replace);
             reg = that.cleanRegex(stmt.replace);
-            that.log('cleaned pattern:', reg);
+            debug('cleaned pattern: %s', reg);
             re = new RegExp(reg, 'g');
           } else {
             re = new RegExp(stmt.replace, 'g');
@@ -618,14 +613,14 @@ Runtime.prototype = {
           } else if (stmt.location === 'BODY') {
             location = 'response.body';
           }
-          that.log('location:', location);
+          debug('location: %s', location);
           subject = that._getValue(location);
           start = subject.indexOf(stmt.prefix) + stmt.prefix.length;
-          that.log('starting at', start);
+          debug('starting at %s', start);
           end = subject.indexOf(stmt.postfix, start);
-          that.log('ending at', end);
+          debug('ending at %s', end);
           that.globals[stmt.variableName] = subject.slice(start, end);
-          that.log('String:', that.globals[stmt.variableName]);
+          debug('String: %s', that.globals[stmt.variableName]);
           that.trimWhitespace(stmt);
           deferred.resolve({});
           break;
@@ -638,7 +633,7 @@ Runtime.prototype = {
           } else if (stmt.location === 'BODY') {
             location = 'response.body';
           }
-          that.log('location:', location);
+          debug('location: %s', location);
           subject = that._getValue(location);
           var prefixReg = that.cleanRegex(stmt.prefix);
           var startRegex = new RegExp(prefixReg);
@@ -646,12 +641,12 @@ Runtime.prototype = {
           var endRegex = new RegExp(postfixReg);
           var word = subject.match(startRegex)[0];
           start = subject.search(startRegex) + word.length;
-          that.log('starting at', start);
+          debug('starting at %s', start);
           var temp = subject.slice(start);
           end = temp.search(endRegex) + start;
-          that.log('ending at', end);
+          debug('ending at %s', end);
           that.globals[stmt.variableName] = subject.slice(start, end);
-          that.log('String:', that.globals[stmt.variableName]);
+          debug('String: %s', that.globals[stmt.variableName]);
           that.trimWhitespace(stmt);
           deferred.resolve({});
           break;
@@ -772,7 +767,7 @@ Runtime.prototype = {
         case 'ZestActionPrint':
           // Print message, replacing any variable's value if exists.
           message = that._findAndReplace(stmt.message);
-          that.log('print:', message);
+          debug('print: %s', message);
           deferred.resolve({ print: message,
                              type: stmt.elementType });
           break;
@@ -795,7 +790,7 @@ Runtime.prototype = {
         case 'ZestActionFail':
           // Print failure message and stop script execution.
           message = that._findAndReplace(stmt.message);
-          that.log('Failed:', message);
+          debug('Failed: %s', message);
           deferred.resolve({ result: false,
                              print: message,
                              priority: stmt.priority,
@@ -843,7 +838,7 @@ Runtime.prototype = {
       }
     }
     else {
-      that.log('disabled statement', [stmt.index, stmt.elementType]);
+      debug('disabled statement %s', [stmt.index, stmt.elementType]);
       deferred.resolve({});
     }
     return deferred.promise;
